@@ -2,8 +2,6 @@ package team.joup.chijun.domain.problem.entity
 
 import jakarta.persistence.*
 
-enum class CaseType { PUBLIC, HIDDEN }
-
 @Entity
 @Table(name = "test_cases")
 class TestCaseEntity(
