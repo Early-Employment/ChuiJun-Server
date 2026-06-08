@@ -1,0 +1,19 @@
+server:
+    port: ${SERVER_PORT:8083}
+
+spring:
+    application:
+        name: chijun-server
+
+    datasource:
+        url: ${DB_URL}
+        username: ${DB_USERNAME}
+        password: ${DB_PASSWORD}
+
+    jpa:
+        hibernate:
+            ddl-auto: ${DDL_AUTO:validate}
+        properties:
+            hibernate:
+                show_sql: true
+                format_sql: true
