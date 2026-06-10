@@ -1,19 +1,19 @@
 package team.joup.chuijun.domain.course.entity
 
-import team.joup.chuijun.domain.member.entity.MemberEntity
+import team.joup.chuijun.domain.member.entity.MemberJpaEntity
 import jakarta.persistence.*
 import java.time.LocalDateTime
 
 @Entity
 @Table(name = "courses")
-class CourseEntity(
+class CourseJpaEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "teacher_id", nullable = false)
-    var teacher: MemberEntity,
+    var teacher: MemberJpaEntity,
 
     @Column(name = "course_name", nullable = false, length = 100)
     var courseName: String,

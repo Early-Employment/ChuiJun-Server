@@ -4,14 +4,14 @@ import jakarta.persistence.*
 
 @Entity
 @Table(name = "test_cases")
-class TestCaseEntity(
+class TestCaseJpaEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "problem_id", nullable = false)
-    var problem: ProblemEntity,
+    var problem: ProblemJpaEntity,
 
     @Enumerated(EnumType.STRING)
     @Column(name = "case_type", nullable = false)

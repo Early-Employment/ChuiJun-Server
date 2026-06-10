@@ -1,28 +1,28 @@
 package team.joup.chuijun.domain.assignment.entity
 
-import team.joup.chuijun.domain.member.entity.MemberEntity
-import team.joup.chuijun.domain.problem.entity.ProblemEntity
+import team.joup.chuijun.domain.member.entity.MemberJpaEntity
+import team.joup.chuijun.domain.problem.entity.ProblemJpaEntity
 import jakarta.persistence.*
 import java.time.LocalDateTime
 
 @Entity
 @Table(name = "code_drafts")
-class CodeDraftEntity(
+class CodeDraftJpaEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
-    var member: MemberEntity,
+    var member: MemberJpaEntity,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "problem_id")
-    var problem: ProblemEntity? = null,
+    var problem: ProblemJpaEntity? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assignment_id")
-    var assignment: AssignmentEntity? = null,
+    var assignment: AssignmentJpaEntity? = null,
 
     @Column(name = "language_code", nullable = false, length = 40)
     var languageCode: String,

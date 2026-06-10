@@ -1,6 +1,6 @@
 package team.joup.chuijun.domain.submission.entity
 
-import team.joup.chuijun.domain.member.entity.MemberEntity
+import team.joup.chuijun.domain.member.entity.MemberJpaEntity
 import jakarta.persistence.*
 import java.io.Serializable
 import java.time.LocalDateTime
@@ -22,12 +22,12 @@ class SolutionLikeEntity(
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("submissionId")
     @JoinColumn(name = "submission_id", nullable = false)
-    val submission: SubmissionEntity,
+    val submission: SubmissionJpaEntity,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("memberId")
     @JoinColumn(name = "member_id", nullable = false)
-    val member: MemberEntity,
+    val member: MemberJpaEntity,
 
     @Column(name = "created_at", nullable = false, updatable = false)
     val createdAt: LocalDateTime = LocalDateTime.now()

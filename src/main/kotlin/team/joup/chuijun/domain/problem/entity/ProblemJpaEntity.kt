@@ -1,19 +1,19 @@
 package team.joup.chuijun.domain.problem.entity
 
-import team.joup.chuijun.domain.member.entity.MemberEntity
+import team.joup.chuijun.domain.member.entity.MemberJpaEntity
 import jakarta.persistence.*
 import java.time.LocalDateTime
 
 @Entity
 @Table(name = "problems")
-class ProblemEntity(
+class ProblemJpaEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "writer_id")
-    var writer: MemberEntity? = null,
+    var writer: MemberJpaEntity? = null,
 
     @Column(name = "problem_code", nullable = false, unique = true, length = 120)
     var problemCode: String,
