@@ -10,8 +10,11 @@ import java.time.LocalDate
 interface DailyStudyStatsJpaRepository : JpaRepository<DailyStudyStatsJpaEntity, DailyStudyStatsId> {
 
     @Query("SELECT d FROM DailyStudyStatsJpaEntity d WHERE d.id.memberId = :memberId AND d.id.studyDate >= :startDate")
-    fun findCurrentYearStats(
+    fun findStatsSince(
         @Param("memberId") memberId: Long,
         @Param("startDate") startDate: LocalDate
     ): List<DailyStudyStatsJpaEntity>
+
+    @Query("SELECT SUM(d.solvedCount) FROM DailyStudyStatsJpaEntity d WHERE d.id.memberId = :memberId")
+    fun countTotalSolvedByMemberId(@Param("memberId") memberId: Long): Int?
 }

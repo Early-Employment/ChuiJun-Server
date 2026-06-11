@@ -25,7 +25,7 @@ class MemberService(
             ?: throw IllegalArgumentException("해당 회원을 찾을 수 없습니다. ID: $memberId")
 
         val oneYearAgo = LocalDate.now().minusYears(1)
-        val statsList = dailyStudyStatsJpaRepository.findCurrentYearStats(memberId, oneYearAgo)
+        val statsList = dailyStudyStatsJpaRepository.findStatsSince(memberId, oneYearAgo)
 
         val grassRecords = statsList.map { stats ->
             GetDailyGrassDto(
@@ -35,14 +35,14 @@ class MemberService(
             )
         }
 
-        val totalSolved = statsList.sumOf { stats -> stats.solvedCount }
+        val totalSolved = dailyStudyStatsJpaRepository.countTotalSolvedByMemberId(memberId) ?: 0
 
         val pageable = PageRequest.of(0, 4, Sort.by(Sort.Direction.DESC, "submittedAt"))
         val recentSubmissions = submissionJpaRepository.findByMemberId(memberId, pageable)
 
         val recentActivities = recentSubmissions.map { submission ->
             GetRecentActivityDto(
-                submissionId = submission.id!!,
+                submissionId = submission.id ?: throw IllegalStateException("Submission ID must not be null"),
                 problemTitle = submission.problem?.title ?: "삭제된 문제",
                 problemLevel = submission.problem?.level ?: 0,
                 score = submission.score,
@@ -51,7 +51,7 @@ class MemberService(
         }
 
         return GetMemberProfileResponse(
-            memberId = member.id!!,
+            memberId = member.id ?: throw IllegalStateException("Member ID must not be null"),
             name = member.name,
             profileImageUrl = member.profileImageUrl,
             tier = member.tier,
