@@ -3,7 +3,7 @@ server:
 
 spring:
     application:
-        name: chijun-server
+        name: chuijun-server
 
     datasource:
         url: ${DB_URL}

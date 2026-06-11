@@ -45,6 +45,15 @@ class MemberJpaEntity(
     @Column(nullable = false)
     var rating: Int = 0,
 
+    @Column(nullable = false)
+    var coin: Int = 0,
+
+    @Column(name = "current_streak", nullable = false)
+    var currentStreak: Int = 0,
+
+    @Column(name = "max_streak", nullable = false)
+    var maxStreak: Int = 0,
+
     @Column(name = "badges_json", columnDefinition = "JSON")
     var badgesJson: String? = null,
 

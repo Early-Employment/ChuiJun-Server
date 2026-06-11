@@ -14,7 +14,7 @@ data class DailyStudyStatsId(
 
 @Entity
 @Table(name = "daily_study_stats")
-class DailyStudyStatsEntity(
+class DailyStudyStatsJpaEntity(
     @EmbeddedId
     val id: DailyStudyStatsId,
 
