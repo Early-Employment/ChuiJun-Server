@@ -18,7 +18,7 @@ import team.joup.chuijun.global.error.ErrorResponse
 
 @Tag(name = "Member", description = "회원 관련 API")
 @RestController
-@RequestMapping("/api/v1/members")
+@RequestMapping("members")
 class MemberController(
     private val memberService: MemberService
 ) {
