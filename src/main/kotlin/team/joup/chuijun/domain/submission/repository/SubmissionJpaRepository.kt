@@ -11,3 +11,4 @@ interface SubmissionJpaRepository : JpaRepository<SubmissionJpaEntity, Long> {
     @Query("SELECT s FROM SubmissionJpaEntity s LEFT JOIN FETCH s.problem WHERE s.member.id = :memberId")
     fun findByMemberId(@Param("memberId") memberId: Long, pageable: Pageable): List<SubmissionJpaEntity>
 }
+
