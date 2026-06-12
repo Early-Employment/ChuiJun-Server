@@ -22,7 +22,7 @@ class MemberService(
 ) {
     fun getMemberProfile(memberId: Long): GetMemberProfileResponse {
         val member = memberJpaRepository.findByIdOrNull(memberId)
-            ?: throw IllegalArgumentException("해당 회원을 찾을 수 없습니다. ID: $memberId")
+            ?: throw NoSuchElementException("존재하지 않는 회원입니다. ID: $memberId")
 
         val oneYearAgo = LocalDate.now().minusYears(1)
         val statsList = dailyStudyStatsJpaRepository.findStatsSince(memberId, oneYearAgo)
@@ -42,7 +42,7 @@ class MemberService(
 
         val recentActivities = recentSubmissions.map { submission ->
             GetRecentActivityDto(
-                submissionId = submission.id ?: throw IllegalStateException("Submission ID must not be null"),
+                submissionId = submission.id ?: throw IllegalStateException("제출 데이터의 식별자(ID)가 누락되었습니다."),
                 problemTitle = submission.problem?.title ?: "삭제된 문제",
                 problemLevel = submission.problem?.level ?: 0,
                 score = submission.score,
@@ -51,7 +51,7 @@ class MemberService(
         }
 
         return GetMemberProfileResponse(
-            memberId = member.id ?: throw IllegalStateException("Member ID must not be null"),
+            memberId = member.id ?: throw IllegalStateException("회원 데이터의 식별자(ID)가 누락되었습니다."),
             name = member.name,
             profileImageUrl = member.profileImageUrl,
             tier = member.tier,
