@@ -16,7 +16,7 @@ class MemberController(
 
     @GetMapping("/{memberId}/profile")
     fun getMemberProfile(
-        @PathVariable memberId: Long
+        @PathVariable("memberId") memberId: Long
     ): ResponseEntity<GetMemberProfileResponse> {
         val response = memberService.getMemberProfile(memberId)
         return ResponseEntity.ok(response)
