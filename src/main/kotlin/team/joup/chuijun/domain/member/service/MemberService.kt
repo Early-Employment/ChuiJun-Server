@@ -22,7 +22,7 @@ class MemberService(
 ) {
     fun getMemberProfile(memberId: Long): GetMemberProfileResponse {
         val member = memberJpaRepository.findByIdOrNull(memberId)
-            ?: throw IllegalArgumentException("존재하지 않는 회원입니다. ID: $memberId")
+            ?: throw NoSuchElementException("존재하지 않는 회원입니다. ID: $memberId")
 
         val oneYearAgo = LocalDate.now().minusYears(1)
         val statsList = dailyStudyStatsJpaRepository.findStatsSince(memberId, oneYearAgo)
