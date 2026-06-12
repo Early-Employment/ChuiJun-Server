@@ -18,7 +18,7 @@ import team.joup.chuijun.global.error.ErrorResponse
 
 @Tag(name = "Member", description = "회원 관련 API")
 @RestController
-@RequestMapping("/api/v1/members")
+@RequestMapping("/members")
 class MemberController(
     private val memberService: MemberService
 ) {
@@ -28,10 +28,7 @@ class MemberController(
         description = "지정한 회원의 프로필 정보, 잔디 통계(최근 1년), 총 푼 문제 수, 최근 제출 활동(4건)을 조회합니다."
     )
     @ApiResponses(value = [
-        ApiResponse(
-            responseCode = "200",
-            description = "조회 성공"
-        ),
+        ApiResponse(responseCode = "200", description = "조회 성공"),
         ApiResponse(
             responseCode = "404",
             description = "해당 회원을 찾을 수 없음",
