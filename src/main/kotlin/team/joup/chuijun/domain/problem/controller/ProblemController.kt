@@ -7,6 +7,9 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.data.web.PageableDefault
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -24,17 +27,19 @@ class ProblemController(
     private val problemService: ProblemService
 ) {
 
-    @Operation(summary = "문제 전체 리스트 조회", description = "시스템에 등록된 모든 알고리즘 문제 리스트를 레벨, 메인 태그 정보와 함께 조회합니다.")
+    @Operation(summary = "문제 전체 리스트 조회 (페이징)", description = "시스템에 등록된 모든 알고리즘 문제 리스트를 페이징 처리하여 조회합니다.")
     @ApiResponses(value = [
         ApiResponse(responseCode = "200", description = "조회 성공")
     ])
     @GetMapping
-    fun getProblems(): ResponseEntity<List<GetProblemListResponse>> {
-        val response = problemService.getProblemList()
+    fun getProblems(
+        @PageableDefault(size = 20) pageable: Pageable
+    ): ResponseEntity<Page<GetProblemListResponse>> {
+        val response = problemService.getProblemList(pageable)
         return ResponseEntity.ok(response)
     }
 
-    @Operation(summary = "문제 상세 조회 (IDE 단면)", description = "특정 문제의 제목, 마크다운 지문, 조건 및 노출용 예제 테스트 케이스를 상세 조회합니다.")
+    @Operation(summary = "문제 상세 조회 (IDE 단면)", description = "특정 문제의 마크다운 지문 및 공개용 예제 테스트 케이스만 상세 조회합니다.")
     @ApiResponses(value = [
         ApiResponse(responseCode = "200", description = "조회 성공"),
         ApiResponse(
