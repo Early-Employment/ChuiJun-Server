@@ -26,18 +26,18 @@ class MemberService(
 ) {
 
     fun getRankings(pageable: Pageable): Page<GetMemberProfileResponse> {
-        val members = memberJpaRepository.findAllByOrderByRatingDesc(pageable)
+        val members = memberJpaRepository.findAll(pageable)
         return members.map { member ->
-            val totalSolvedCount = dailyStudyStatsJpaRepository.countTotalSolvedByMemberId(member.id!!) ?: 0
+            val memberId = checkNotNull(member.id) { "회원 데이터의 식별자가 누락되었습니다." }
             GetMemberProfileResponse(
-                memberId = checkNotNull(member.id) { "회원 데이터의 식별자가 누락되었습니다." },
+                memberId = memberId,
                 name = member.name,
                 profileImageUrl = member.profileImageUrl,
                 tier = member.tier,
                 rating = member.rating,
                 coin = member.coin,
                 currentStreak = member.currentStreak,
-                totalSolvedCount = totalSolvedCount,
+                totalSolvedCount = 0,
                 grassRecord = emptyList(),
                 recentActivities = emptyList()
             )
