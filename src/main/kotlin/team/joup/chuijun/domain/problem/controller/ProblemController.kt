@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.data.web.PageableDefault
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -32,7 +33,7 @@ class ProblemController(
     fun getProblems(
         @Parameter(description = "검색할 문제 제목 키워드 (선택)", example = "두 수의 합")
         @RequestParam(name = "keyword", required = false) keyword: String?,
-        @PageableDefault(size = 20) pageable: Pageable
+        @PageableDefault(size = 20, sort = ["id"], direction = Sort.Direction.DESC) pageable: Pageable
     ): ResponseEntity<Page<GetProblemListResponse>> {
         val response = problemService.getProblemList(keyword, pageable)
         return ResponseEntity.ok(response)

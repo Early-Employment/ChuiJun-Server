@@ -28,7 +28,7 @@ class ProblemService(
 
         return problems.map { problem ->
             GetProblemListResponse(
-                problemId = problem.id ?: throw IllegalStateException("문제 데이터의 식별자가 누락되었습니다."),
+                problemId = checkNotNull(problem.id) { "문제 데이터의 식별자가 누락되었습니다." },
                 problemCode = problem.problemCode,
                 title = problem.title,
                 level = problem.level,
@@ -47,7 +47,7 @@ class ProblemService(
             CaseType.PUBLIC
         ).map { testCase ->
             TestCaseDto(
-                testCaseId = testCase.id ?: throw IllegalStateException("테스트 케이스 데이터의 식별자가 누락되었습니다."),
+                testCaseId = checkNotNull(testCase.id) { "테스트 케이스 데이터의 식별자가 누락되었습니다." },
                 caseType = testCase.caseType.name,
                 inputText = testCase.inputText,
                 expectedOutputText = testCase.expectedOutputText,
@@ -56,7 +56,7 @@ class ProblemService(
         }
 
         return GetProblemDetailResponse(
-            problemId = problem.id ?: throw IllegalStateException("문제 데이터의 식별자가 누락되었습니다."),
+            problemId = checkNotNull(problem.id) { "문제 데이터의 식별자가 누락되었습니다." },
             problemCode = problem.problemCode,
             title = problem.title,
             descriptionMd = problem.descriptionMd,
