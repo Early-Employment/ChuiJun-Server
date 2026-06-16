@@ -1,29 +1,29 @@
 package team.joup.chuijun.domain.assignment.entity
 
-import team.joup.chuijun.domain.course.entity.CourseEntity
-import team.joup.chuijun.domain.member.entity.MemberEntity
-import team.joup.chuijun.domain.problem.entity.ProblemEntity
+import team.joup.chuijun.domain.course.entity.CourseJpaEntity
+import team.joup.chuijun.domain.member.entity.MemberJpaEntity
+import team.joup.chuijun.domain.problem.entity.ProblemJpaEntity
 import jakarta.persistence.*
 import java.time.LocalDateTime
 
 @Entity
 @Table(name = "assignments")
-class AssignmentEntity(
+class AssignmentJpaEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id", nullable = false)
-    var course: CourseEntity,
+    var course: CourseJpaEntity,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "problem_id", nullable = false)
-    var problem: ProblemEntity,
+    var problem: ProblemJpaEntity,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "teacher_id", nullable = false)
-    var teacher: MemberEntity,
+    var teacher: MemberJpaEntity,
 
     @Column(nullable = false, length = 200)
     var title: String,

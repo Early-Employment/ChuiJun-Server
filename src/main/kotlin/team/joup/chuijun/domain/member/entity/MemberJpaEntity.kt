@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 
 @Entity
 @Table(name = "members")
-class MemberEntity(
+class MemberJpaEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
@@ -20,17 +20,23 @@ class MemberEntity(
     @Column(nullable = false, unique = true, length = 255)
     var email: String,
 
-    @Column(name = "login_id", nullable = false, unique = true, length = 50)
-    var loginId: String,
-
-    @Column(name = "password_hash", nullable = false, length = 255)
-    var passwordHash: String,
-
     @Column(nullable = false, length = 80)
     var name: String,
 
     @Column(name = "profile_image_url", length = 500)
     var profileImageUrl: String? = null,
+
+    @Column(name = "student_id", unique = true)
+    val studentId: Long? = null,
+
+    var grade: Int? = null,
+
+    @Column(name = "class_num")
+    var classNum: Int? = null,
+
+    var number: Int? = null,
+
+    var major: String? = null,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -38,6 +44,15 @@ class MemberEntity(
 
     @Column(nullable = false)
     var rating: Int = 0,
+
+    @Column(nullable = false)
+    var coin: Int = 0,
+
+    @Column(name = "current_streak", nullable = false)
+    var currentStreak: Int = 0,
+
+    @Column(name = "max_streak", nullable = false)
+    var maxStreak: Int = 0,
 
     @Column(name = "badges_json", columnDefinition = "JSON")
     var badgesJson: String? = null,

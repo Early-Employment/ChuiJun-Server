@@ -14,14 +14,14 @@ data class DailyStudyStatsId(
 
 @Entity
 @Table(name = "daily_study_stats")
-class DailyStudyStatsEntity(
+class DailyStudyStatsJpaEntity(
     @EmbeddedId
     val id: DailyStudyStatsId,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("memberId")
     @JoinColumn(name = "member_id", nullable = false)
-    val member: MemberEntity,
+    val member: MemberJpaEntity,
 
     @Column(name = "study_seconds", nullable = false)
     var studySeconds: Int = 0,
