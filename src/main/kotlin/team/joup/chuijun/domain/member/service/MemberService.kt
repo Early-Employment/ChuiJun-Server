@@ -1,5 +1,7 @@
 package team.joup.chuijun.domain.member.service
 
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
@@ -22,6 +24,25 @@ class MemberService(
     private val dailyStudyStatsJpaRepository: DailyStudyStatsJpaRepository,
     private val submissionJpaRepository: SubmissionJpaRepository
 ) {
+
+    fun getRankings(pageable: Pageable): Page<GetMemberProfileResponse> {
+        val members = memberJpaRepository.findAllByOrderByRatingDesc(pageable)
+        return members.map { member ->
+            val totalSolvedCount = dailyStudyStatsJpaRepository.countTotalSolvedByMemberId(member.id!!) ?: 0
+            GetMemberProfileResponse(
+                memberId = checkNotNull(member.id) { "회원 데이터의 식별자가 누락되었습니다." },
+                name = member.name,
+                profileImageUrl = member.profileImageUrl,
+                tier = member.tier,
+                rating = member.rating,
+                coin = member.coin,
+                currentStreak = member.currentStreak,
+                totalSolvedCount = totalSolvedCount,
+                grassRecord = emptyList(),
+                recentActivities = emptyList()
+            )
+        }
+    }
 
     fun getMemberProfile(memberId: Long): GetMemberProfileResponse {
         val member = memberJpaRepository.findByIdOrNull(memberId)
