@@ -19,8 +19,13 @@ class ProblemService(
     private val testCaseJpaRepository: TestCaseJpaRepository
 ) {
 
-    fun getProblemList(pageable: Pageable): Page<GetProblemListResponse> {
-        val problems = problemJpaRepository.findAll(pageable)
+    fun getProblemList(keyword: String?, pageable: Pageable): Page<GetProblemListResponse> {
+        val problems = if (!keyword.isNullOrBlank()) {
+            problemJpaRepository.findByTitleContaining(keyword, pageable)
+        } else {
+            problemJpaRepository.findAll(pageable)
+        }
+
         return problems.map { problem ->
             GetProblemListResponse(
                 problemId = problem.id ?: throw IllegalStateException("문제 데이터의 식별자가 누락되었습니다."),

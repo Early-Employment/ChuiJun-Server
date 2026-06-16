@@ -11,10 +11,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import team.joup.chuijun.domain.problem.dto.response.GetProblemDetailResponse
 import team.joup.chuijun.domain.problem.dto.response.GetProblemListResponse
 import team.joup.chuijun.domain.problem.service.ProblemService
@@ -27,15 +24,17 @@ class ProblemController(
     private val problemService: ProblemService
 ) {
 
-    @Operation(summary = "문제 전체 리스트 조회 (페이징)", description = "시스템에 등록된 모든 알고리즘 문제 리스트를 페이징 처리하여 조회합니다.")
+    @Operation(summary = "문제 리스트 조회 및 검색 (페이징)", description = "시스템에 등록된 모든 문제 혹은 검색어가 포함된 문제 리스트를 페이징 처리하여 조회합니다.")
     @ApiResponses(value = [
         ApiResponse(responseCode = "200", description = "조회 성공")
     ])
     @GetMapping
     fun getProblems(
+        @Parameter(description = "검색할 문제 제목 키워드 (선택)", example = "두 수의 합")
+        @RequestParam(name = "keyword", required = false) keyword: String?,
         @PageableDefault(size = 20) pageable: Pageable
     ): ResponseEntity<Page<GetProblemListResponse>> {
-        val response = problemService.getProblemList(pageable)
+        val response = problemService.getProblemList(keyword, pageable)
         return ResponseEntity.ok(response)
     }
 
