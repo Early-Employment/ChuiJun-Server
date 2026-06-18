@@ -64,6 +64,7 @@ class MemberJpaEntity(
     var updatedAt: LocalDateTime = LocalDateTime.now()
 ) {
     fun decreaseCoin(amount: Int) {
+        require(amount >= 0) { "차감할 코인은 0 이상이어야 합니다." }
         if (this.coin < amount) {
             throw IllegalStateException("코인이 부족합니다. 보유 코인: ${this.coin}, 차감 요청 코인: $amount")
         }

@@ -42,7 +42,7 @@ class StoreService(
 
     @Transactional
     fun purchaseItem(memberId: Long, itemId: Long) {
-        val member = memberJpaRepository.findByIdOrNull(memberId)
+        val member = memberJpaRepository.findByIdWithPessimisticLock(memberId)
             ?: throw NoSuchElementException("존재하지 않는 회원입니다.")
 
         val item = itemJpaRepository.findByIdOrNull(itemId)
@@ -50,10 +50,6 @@ class StoreService(
 
         if (memberItemJpaRepository.existsByMemberIdAndItemId(memberId, itemId)) {
             throw IllegalStateException("이미 보유하고 있는 아이템입니다.")
-        }
-
-        if (member.coin < item.price) {
-            throw IllegalStateException("코인이 부족합니다. 보유 코인: ${member.coin}, 아이템 가격: ${item.price}")
         }
 
         member.decreaseCoin(item.price)
