@@ -48,7 +48,7 @@ class MemberJpaEntity(
     @Column(nullable = false)
     var coin: Int = 0,
 
-    @Column(name = "total_solved_count", nullable = false)
+    @Column(name = "total_solved_count", nullable = false, columnDefinition = "bigint default 0")
     var totalSolvedCount: Long = 0,
 
     @Column(name = "current_streak", nullable = false)
