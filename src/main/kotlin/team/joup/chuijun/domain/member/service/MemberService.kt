@@ -78,7 +78,6 @@ class MemberService(
             profileImageUrl = member.profileImageUrl,
             tier = member.tier,
             rating = member.rating,
-            coin = member.coin,
             currentStreak = member.currentStreak,
             totalSolvedCount = totalSolvedCount,
             grassRecord = grassRecord,
