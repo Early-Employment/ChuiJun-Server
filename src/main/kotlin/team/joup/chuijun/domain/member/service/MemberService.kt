@@ -1,10 +1,13 @@
 package team.joup.chuijun.domain.member.service
 
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import team.joup.chuijun.domain.member.dto.response.GetMemberRankingResponse
 import team.joup.chuijun.domain.member.dto.response.GetMemberProfileResponse
 import team.joup.chuijun.domain.member.dto.response.GetDailyGrassDto
 import team.joup.chuijun.domain.member.dto.response.GetRecentActivityDto
@@ -22,6 +25,22 @@ class MemberService(
     private val dailyStudyStatsJpaRepository: DailyStudyStatsJpaRepository,
     private val submissionJpaRepository: SubmissionJpaRepository
 ) {
+
+    fun getRankings(pageable: Pageable): Page<GetMemberRankingResponse> {
+        val members = memberJpaRepository.findAll(pageable)
+        return members.map { member ->
+            GetMemberRankingResponse(
+                memberId = checkNotNull(member.id) { "회원 데이터의 식별자가 누락되었습니다." },
+                name = member.name,
+                profileImageUrl = member.profileImageUrl,
+                tier = member.tier,
+                rating = member.rating,
+                grade = member.grade,
+                classNum = member.classNum,
+                totalSolvedCount = member.totalSolvedCount
+            )
+        }
+    }
 
     fun getMemberProfile(memberId: Long): GetMemberProfileResponse {
         val member = memberJpaRepository.findByIdOrNull(memberId)
