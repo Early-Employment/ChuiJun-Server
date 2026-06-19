@@ -45,9 +45,6 @@ class MemberJpaEntity(
     @Column(nullable = false)
     var rating: Int = 0,
 
-    @Column(nullable = false)
-    var coin: Int = 0,
-
     @Column(name = "total_solved_count", nullable = false, columnDefinition = "bigint default 0")
     var totalSolvedCount: Long = 0,
 
@@ -65,13 +62,4 @@ class MemberJpaEntity(
 
     @Column(name = "updated_at", nullable = false)
     var updatedAt: LocalDateTime = LocalDateTime.now()
-) {
-    fun decreaseCoin(amount: Int) {
-        require(amount >= 0) { "차감할 코인은 0 이상이어야 합니다." }
-        if (this.coin < amount) {
-            throw IllegalStateException("코인이 부족합니다. 보유 코인: ${this.coin}, 차감 요청 코인: $amount")
-        }
-        this.coin -= amount
-        this.updatedAt = LocalDateTime.now()
-    }
-}
+)

@@ -22,9 +22,6 @@ data class GetMemberProfileResponse(
     @Schema(description = "레이팅 점수", example = "4720")
     val rating: Int,
 
-    @Schema(description = "보유 코인", example = "1250")
-    val coin: Int,
-
     @Schema(description = "현재 연속 스트릭 일수", example = "5")
     val currentStreak: Int,
 
