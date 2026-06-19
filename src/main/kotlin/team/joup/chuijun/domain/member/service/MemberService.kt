@@ -7,6 +7,7 @@ import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import team.joup.chuijun.domain.member.dto.response.GetMemberRankingResponse
 import team.joup.chuijun.domain.member.dto.response.GetMemberProfileResponse
 import team.joup.chuijun.domain.member.dto.response.GetDailyGrassDto
 import team.joup.chuijun.domain.member.dto.response.GetRecentActivityDto
@@ -25,21 +26,18 @@ class MemberService(
     private val submissionJpaRepository: SubmissionJpaRepository
 ) {
 
-    fun getRankings(pageable: Pageable): Page<GetMemberProfileResponse> {
+    fun getRankings(pageable: Pageable): Page<GetMemberRankingResponse> {
         val members = memberJpaRepository.findAll(pageable)
         return members.map { member ->
-            val memberId = checkNotNull(member.id) { "회원 데이터의 식별자가 누락되었습니다." }
-            GetMemberProfileResponse(
-                memberId = memberId,
+            GetMemberRankingResponse(
+                memberId = checkNotNull(member.id) { "회원 데이터의 식별자가 누락되었습니다." },
                 name = member.name,
                 profileImageUrl = member.profileImageUrl,
                 tier = member.tier,
                 rating = member.rating,
-                coin = member.coin,
-                currentStreak = member.currentStreak,
-                totalSolvedCount = 0,
-                grassRecord = emptyList(),
-                recentActivities = emptyList()
+                grade = member.grade,
+                classNum = member.classNum,
+                totalSolvedCount = member.totalSolvedCount
             )
         }
     }
