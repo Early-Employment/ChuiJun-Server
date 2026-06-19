@@ -13,6 +13,7 @@ import org.springframework.data.domain.Sort
 import org.springframework.data.web.PageableDefault
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import team.joup.chuijun.domain.member.dto.response.GetMemberRankingResponse
 import team.joup.chuijun.domain.member.dto.response.GetMemberProfileResponse
 import team.joup.chuijun.domain.member.service.MemberService
 import team.joup.chuijun.global.error.ErrorResponse
@@ -31,7 +32,7 @@ class MemberController(
     @GetMapping("/rankings")
     fun getRankings(
         @PageableDefault(size = 20, sort = ["rating"], direction = Sort.Direction.DESC) pageable: Pageable
-    ): ResponseEntity<Page<GetMemberProfileResponse>> {
+    ): ResponseEntity<Page<GetMemberRankingResponse>> {
         val response = memberService.getRankings(pageable)
         return ResponseEntity.ok(response)
     }

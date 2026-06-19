@@ -27,7 +27,7 @@ class MemberService(
 ) {
 
     fun getRankings(pageable: Pageable): Page<GetMemberRankingResponse> {
-        val members = memberJpaRepository.findAllByOrderByRatingDesc(pageable)
+        val members = memberJpaRepository.findAll(pageable)
         return members.map { member ->
             GetMemberRankingResponse(
                 memberId = checkNotNull(member.id) { "회원 데이터의 식별자가 누락되었습니다." },
