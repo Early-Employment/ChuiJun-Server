@@ -84,4 +84,11 @@ class MemberService(
             recentActivities = recentActivities
         )
     }
+
+    fun getMemberProfileByEmail(email: String): GetMemberProfileResponse {
+        val member = memberJpaRepository.findByEmail(email)
+            ?: throw NoSuchElementException("존재하지 않는 회원입니다. Email: $email")
+
+        return getMemberProfile(checkNotNull(member.id) { "회원 데이터의 식별자가 누락되었습니다." })
+    }
 }
