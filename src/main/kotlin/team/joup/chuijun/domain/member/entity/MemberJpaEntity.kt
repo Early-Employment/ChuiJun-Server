@@ -27,7 +27,7 @@ class MemberJpaEntity(
     var profileImageUrl: String? = null,
 
     @Column(name = "student_id", unique = true)
-    val studentId: Long? = null,
+    var studentId: Long? = null,
 
     var grade: Int? = null,
 

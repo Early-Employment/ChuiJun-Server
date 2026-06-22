@@ -9,9 +9,11 @@ import team.joup.chuijun.domain.member.entity.MemberJpaEntity
 
 interface MemberJpaRepository : JpaRepository<MemberJpaEntity, Long> {
 
+    fun findByEmail(email: String): MemberJpaEntity?
+
+    fun findByStudentId(studentId: Long): MemberJpaEntity?
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select m from MemberJpaEntity m where m.id = :id")
     fun findByIdWithPessimisticLock(@Param("id") id: Long): MemberJpaEntity?
-
-    fun findByEmail(email: String): MemberJpaEntity?
 }
