@@ -20,8 +20,8 @@ spring:
 
 datagsm:
     oauth:
-        client-id: ${DATAGSM_CLIENT_ID}
-        redirect-uri: ${DATAGSM_REDIRECT_URI}
+        client-id: ${DATAGSM_CLIENT_ID:}
+        redirect-uri: ${DATAGSM_REDIRECT_URI:}
         scope: ${DATAGSM_SCOPE:self:read}
         authorization-base-url: ${DATAGSM_AUTHORIZATION_BASE_URL:https://oauth.authorization.datagsm.kr}
         resource-base-url: ${DATAGSM_RESOURCE_BASE_URL:https://oauth.resource.datagsm.kr}

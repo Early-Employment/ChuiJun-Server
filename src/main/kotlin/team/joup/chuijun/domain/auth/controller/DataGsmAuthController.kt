@@ -2,6 +2,7 @@ package team.joup.chuijun.domain.auth.controller
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseCookie
@@ -26,13 +27,14 @@ class DataGsmAuthController(
 
     @Operation(summary = "DataGSM 로그인 시작", description = "PKCE state/verifier를 쿠키에 저장하고 DataGSM OAuth 인증 페이지로 이동합니다.")
     @GetMapping("/login")
-    fun login(): ResponseEntity<Void> {
-        val authorizationRequest = dataGsmOAuthService.createAuthorizationRequest()
+    fun login(request: HttpServletRequest): ResponseEntity<Void> {
+        val authorizationRequest = dataGsmOAuthService.createAuthorizationRequest(request.toServerBaseUrl())
 
         return ResponseEntity.status(HttpStatus.FOUND)
             .location(authorizationRequest.url)
             .header(HttpHeaders.SET_COOKIE, oauthCookie(STATE_COOKIE, authorizationRequest.state).toString())
             .header(HttpHeaders.SET_COOKIE, oauthCookie(CODE_VERIFIER_COOKIE, authorizationRequest.codeVerifier).toString())
+            .header(HttpHeaders.SET_COOKIE, oauthCookie(REDIRECT_URI_COOKIE, authorizationRequest.redirectUri).toString())
             .build()
     }
 
@@ -42,18 +44,21 @@ class DataGsmAuthController(
         @RequestParam code: String,
         @RequestParam state: String,
         @CookieValue(name = STATE_COOKIE, required = false) savedState: String?,
-        @CookieValue(name = CODE_VERIFIER_COOKIE, required = false) codeVerifier: String?
+        @CookieValue(name = CODE_VERIFIER_COOKIE, required = false) codeVerifier: String?,
+        @CookieValue(name = REDIRECT_URI_COOKIE, required = false) redirectUri: String?
     ): ResponseEntity<DgLoginResponse> {
         val response = dataGsmOAuthService.login(
             code = code,
             state = state,
             savedState = savedState,
-            codeVerifier = codeVerifier
+            codeVerifier = codeVerifier,
+            redirectUri = redirectUri
         )
 
         return ResponseEntity.ok()
             .header(HttpHeaders.SET_COOKIE, clearCookie(STATE_COOKIE).toString())
             .header(HttpHeaders.SET_COOKIE, clearCookie(CODE_VERIFIER_COOKIE).toString())
+            .header(HttpHeaders.SET_COOKIE, clearCookie(REDIRECT_URI_COOKIE).toString())
             .body(response)
     }
 
@@ -80,5 +85,17 @@ class DataGsmAuthController(
     private companion object {
         const val STATE_COOKIE = "dg_oauth_state"
         const val CODE_VERIFIER_COOKIE = "dg_oauth_code_verifier"
+        const val REDIRECT_URI_COOKIE = "dg_oauth_redirect_uri"
     }
+}
+
+private fun HttpServletRequest.toServerBaseUrl(): String {
+    val forwardedProto = getHeader("X-Forwarded-Proto")
+    val forwardedHost = getHeader("X-Forwarded-Host")
+    val scheme = forwardedProto ?: scheme
+    val host = forwardedHost ?: run {
+        val defaultPort = (scheme == "http" && serverPort == 80) || (scheme == "https" && serverPort == 443)
+        if (defaultPort) serverName else "$serverName:$serverPort"
+    }
+    return "$scheme://$host"
 }

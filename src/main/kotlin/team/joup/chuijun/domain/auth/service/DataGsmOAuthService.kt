@@ -29,8 +29,11 @@ class DataGsmOAuthService(
 
     private val secureRandom = SecureRandom()
 
-    fun createAuthorizationRequest(): AuthorizationRequest {
-        require(properties.clientId.isNotBlank()) { "DATAGSM_CLIENT_ID 환경 변수가 설정되지 않았습니다." }
+    fun createAuthorizationRequest(serverBaseUrl: String): AuthorizationRequest {
+        val clientId = properties.clientId.validConfigValue("DATAGSM_CLIENT_ID")
+        val redirectUri = properties.redirectUri
+            .takeIf { it.isUsableConfigValue() }
+            ?: "$serverBaseUrl/auth/dg/callback"
 
         val state = randomUrlSafeString(32)
         val codeVerifier = randomUrlSafeString(64)
@@ -38,8 +41,8 @@ class DataGsmOAuthService(
 
         val url = UriComponentsBuilder
             .fromUriString("${properties.authorizationBaseUrl}/v1/oauth/authorize")
-            .queryParam("client_id", properties.clientId)
-            .queryParam("redirect_uri", properties.redirectUri)
+            .queryParam("client_id", clientId)
+            .queryParam("redirect_uri", redirectUri)
             .queryParam("response_type", "code")
             .queryParam("state", state)
             .queryParam("code_challenge", codeChallenge)
@@ -53,14 +56,15 @@ class DataGsmOAuthService(
             .encode()
             .toUri()
 
-        return AuthorizationRequest(url, state, codeVerifier)
+        return AuthorizationRequest(url, state, codeVerifier, redirectUri)
     }
 
-    fun login(code: String, state: String, savedState: String?, codeVerifier: String?): DgLoginResponse {
+    fun login(code: String, state: String, savedState: String?, codeVerifier: String?, redirectUri: String?): DgLoginResponse {
         require(savedState != null && codeVerifier != null) { "OAuth 인증 쿠키가 없습니다. 로그인을 다시 시작해 주세요." }
         require(state == savedState) { "OAuth state 값이 일치하지 않습니다." }
+        val resolvedRedirectUri = redirectUri.validConfigValue("OAuth redirect_uri")
 
-        val token = exchangeToken(code, codeVerifier)
+        val token = exchangeToken(code, codeVerifier, resolvedRedirectUri)
         val userInfo = getUserInfo(token.accessToken)
         val member = persistenceService.upsertMember(userInfo)
 
@@ -75,12 +79,12 @@ class DataGsmOAuthService(
         )
     }
 
-    private fun exchangeToken(code: String, codeVerifier: String): DgTokenResponse {
+    private fun exchangeToken(code: String, codeVerifier: String, redirectUri: String): DgTokenResponse {
         val request = DgTokenRequest(
             grantType = "authorization_code",
             code = code,
-            clientId = properties.clientId,
-            redirectUri = properties.redirectUri,
+            clientId = properties.clientId.validConfigValue("DATAGSM_CLIENT_ID"),
+            redirectUri = redirectUri,
             codeVerifier = codeVerifier
         )
 
@@ -117,8 +121,18 @@ class DataGsmOAuthService(
     data class AuthorizationRequest(
         val url: URI,
         val state: String,
-        val codeVerifier: String
+        val codeVerifier: String,
+        val redirectUri: String
     )
+}
+
+private fun String?.isUsableConfigValue(): Boolean {
+    return !isNullOrBlank() && !contains("\${")
+}
+
+private fun String?.validConfigValue(name: String): String {
+    require(isUsableConfigValue()) { "$name 환경 변수가 실제 값으로 설정되지 않았습니다." }
+    return checkNotNull(this)
 }
 
 @Component
