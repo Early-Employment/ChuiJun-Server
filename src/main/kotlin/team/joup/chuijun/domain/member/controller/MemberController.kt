@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.web.PageableDefault
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.core.userdetails.UserDetails
@@ -42,6 +43,11 @@ class MemberController(
     @ApiResponses(value = [
         ApiResponse(responseCode = "200", description = "조회 성공"),
         ApiResponse(
+            responseCode = "401",
+            description = "인증되지 않은 사용자",
+            content = [Content(schema = Schema(implementation = ErrorResponse::class))]
+        ),
+        ApiResponse(
             responseCode = "404",
             description = "해당 회원을 찾을 수 없음",
             content = [Content(schema = Schema(implementation = ErrorResponse::class))]
@@ -54,8 +60,12 @@ class MemberController(
     ])
     @GetMapping("/me")
     fun getMyProfile(
-        @AuthenticationPrincipal userDetails: UserDetails
+        @AuthenticationPrincipal userDetails: UserDetails?
     ): ResponseEntity<GetMemberProfileResponse> {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
+        }
+
         val response = memberService.getMemberProfileByEmail(userDetails.username)
         return ResponseEntity.ok(response)
     }

@@ -11,6 +11,7 @@ import team.joup.chuijun.domain.member.dto.response.GetMemberRankingResponse
 import team.joup.chuijun.domain.member.dto.response.GetMemberProfileResponse
 import team.joup.chuijun.domain.member.dto.response.GetDailyGrassDto
 import team.joup.chuijun.domain.member.dto.response.GetRecentActivityDto
+import team.joup.chuijun.domain.member.entity.MemberJpaEntity
 import team.joup.chuijun.domain.member.repository.MemberJpaRepository
 import team.joup.chuijun.domain.member.repository.DailyStudyStatsJpaRepository
 import team.joup.chuijun.domain.submission.repository.SubmissionJpaRepository
@@ -45,7 +46,17 @@ class MemberService(
     fun getMemberProfile(memberId: Long): GetMemberProfileResponse {
         val member = memberJpaRepository.findByIdOrNull(memberId)
             ?: throw NoSuchElementException("존재하지 않는 회원입니다. ID: $memberId")
+        return convertToProfileResponse(member)
+    }
 
+    fun getMemberProfileByEmail(email: String): GetMemberProfileResponse {
+        val member = memberJpaRepository.findByEmail(email)
+            ?: throw NoSuchElementException("존재하지 않는 회원입니다. Email: $email")
+        return convertToProfileResponse(member)
+    }
+
+    private fun convertToProfileResponse(member: MemberJpaEntity): GetMemberProfileResponse {
+        val memberId = checkNotNull(member.id) { "회원 데이터의 식별자가 누락되었습니다." }
         val oneYearAgo = LocalDate.now(ZoneId.of("Asia/Seoul")).minusYears(1)
         val statsList = dailyStudyStatsJpaRepository.findStatsSince(memberId, oneYearAgo)
 
@@ -73,7 +84,7 @@ class MemberService(
         }
 
         return GetMemberProfileResponse(
-            memberId = checkNotNull(member.id) { "회원 데이터의 식별자가 누락되었습니다." },
+            memberId = memberId,
             name = member.name,
             profileImageUrl = member.profileImageUrl,
             tier = member.tier,
@@ -83,12 +94,5 @@ class MemberService(
             grassRecord = grassRecord,
             recentActivities = recentActivities
         )
-    }
-
-    fun getMemberProfileByEmail(email: String): GetMemberProfileResponse {
-        val member = memberJpaRepository.findByEmail(email)
-            ?: throw NoSuchElementException("존재하지 않는 회원입니다. Email: $email")
-
-        return getMemberProfile(checkNotNull(member.id) { "회원 데이터의 식별자가 누락되었습니다." })
     }
 }
