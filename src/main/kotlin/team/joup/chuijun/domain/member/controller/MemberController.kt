@@ -1,7 +1,6 @@
 package team.joup.chuijun.domain.member.controller
 
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -11,7 +10,10 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.web.PageableDefault
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.web.bind.annotation.*
 import team.joup.chuijun.domain.member.dto.response.GetMemberRankingResponse
 import team.joup.chuijun.domain.member.dto.response.GetMemberProfileResponse
@@ -25,7 +27,7 @@ class MemberController(
     private val memberService: MemberService
 ) {
 
-    @Operation(summary = "전체 랭킹 리스트 조회", description = "회원들의 레이팅 점수를 기준으로 정렬된 랭킹 리스트를 페이징 조회합니다. 기본 정렬은 레이팅(rating) 내림차순입니다.")
+    @Operation(summary = "전체 랭킹 리스트 조회")
     @ApiResponses(value = [
         ApiResponse(responseCode = "200", description = "조회 성공")
     ])
@@ -37,12 +39,14 @@ class MemberController(
         return ResponseEntity.ok(response)
     }
 
-    @Operation(
-        summary = "회원 대시보드 프로필 조회",
-        description = "지정한 회원의 프로필 정보, 잔디 통계(최근 1년), 총 푼 문제 수, 최근 제출 활동(4건)을 조회합니다."
-    )
+    @Operation(summary = "내 대시보드 프로필 조회")
     @ApiResponses(value = [
         ApiResponse(responseCode = "200", description = "조회 성공"),
+        ApiResponse(
+            responseCode = "401",
+            description = "인증되지 않은 사용자",
+            content = [Content(schema = Schema(implementation = ErrorResponse::class))]
+        ),
         ApiResponse(
             responseCode = "404",
             description = "해당 회원을 찾을 수 없음",
@@ -50,16 +54,19 @@ class MemberController(
         ),
         ApiResponse(
             responseCode = "500",
-            description = "서버 내부 데이터 에러 (ID가 null인 경우 등)",
+            description = "서버 내부 데이터 에러",
             content = [Content(schema = Schema(implementation = ErrorResponse::class))]
         )
     ])
-    @GetMapping("/{memberId}/profile")
-    fun getMemberProfile(
-        @Parameter(description = "조회할 회원의 고유 ID", example = "1")
-        @PathVariable("memberId") memberId: Long
+    @GetMapping("/me")
+    fun getMyProfile(
+        @AuthenticationPrincipal userDetails: UserDetails?
     ): ResponseEntity<GetMemberProfileResponse> {
-        val response = memberService.getMemberProfile(memberId)
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
+        }
+
+        val response = memberService.getMemberProfileByEmail(userDetails.username)
         return ResponseEntity.ok(response)
     }
 }
