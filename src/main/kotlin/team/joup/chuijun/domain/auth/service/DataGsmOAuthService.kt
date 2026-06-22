@@ -47,11 +47,6 @@ class DataGsmOAuthService(
             .queryParam("state", state)
             .queryParam("code_challenge", codeChallenge)
             .queryParam("code_challenge_method", "S256")
-            .apply {
-                if (properties.scope.isNotBlank()) {
-                    queryParam("scope", properties.scope)
-                }
-            }
             .build()
             .encode()
             .toUri()
