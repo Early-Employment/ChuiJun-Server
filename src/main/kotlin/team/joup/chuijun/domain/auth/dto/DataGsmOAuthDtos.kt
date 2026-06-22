@@ -1,19 +1,23 @@
 package team.joup.chuijun.domain.auth.dto
 
+import com.fasterxml.jackson.databind.annotation.JsonNaming
+import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import team.joup.chuijun.domain.member.entity.MemberRole
 
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class DgTokenRequest(
-    val grant_type: String,
+    val grantType: String,
     val code: String,
-    val client_id: String,
-    val redirect_uri: String,
-    val code_verifier: String
+    val clientId: String,
+    val redirectUri: String,
+    val codeVerifier: String
 )
 
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class DgTokenResponse(
-    val access_token: String,
-    val refresh_token: String,
-    val expires_in: Int
+    val accessToken: String,
+    val refreshToken: String,
+    val expiresIn: Int
 )
 
 data class DgUserInfoResponse(

@@ -1,6 +1,7 @@
 package team.joup.chuijun.domain.auth.service
 
 import org.springframework.http.MediaType
+import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.client.RestClient
@@ -22,10 +23,10 @@ import java.util.Base64
 @Service
 class DataGsmOAuthService(
     private val properties: DataGsmOAuthProperties,
-    private val memberJpaRepository: MemberJpaRepository
+    private val restClient: RestClient,
+    private val persistenceService: DataGsmPersistenceService
 ) {
 
-    private val restClient: RestClient = RestClient.create()
     private val secureRandom = SecureRandom()
 
     fun createAuthorizationRequest(): AuthorizationRequest {
@@ -55,33 +56,32 @@ class DataGsmOAuthService(
         return AuthorizationRequest(url, state, codeVerifier)
     }
 
-    @Transactional
     fun login(code: String, state: String, savedState: String?, codeVerifier: String?): DgLoginResponse {
         require(savedState != null && codeVerifier != null) { "OAuth 인증 쿠키가 없습니다. 로그인을 다시 시작해 주세요." }
         require(state == savedState) { "OAuth state 값이 일치하지 않습니다." }
 
         val token = exchangeToken(code, codeVerifier)
-        val userInfo = getUserInfo(token.access_token)
-        val member = upsertMember(userInfo)
+        val userInfo = getUserInfo(token.accessToken)
+        val member = persistenceService.upsertMember(userInfo)
 
         return DgLoginResponse(
             memberId = checkNotNull(member.id) { "회원 데이터의 식별자가 누락되었습니다." },
             email = member.email,
             name = member.name,
             role = member.role,
-            accessToken = token.access_token,
-            refreshToken = token.refresh_token,
-            expiresIn = token.expires_in
+            accessToken = token.accessToken,
+            refreshToken = token.refreshToken,
+            expiresIn = token.expiresIn
         )
     }
 
     private fun exchangeToken(code: String, codeVerifier: String): DgTokenResponse {
         val request = DgTokenRequest(
-            grant_type = "authorization_code",
+            grantType = "authorization_code",
             code = code,
-            client_id = properties.clientId,
-            redirect_uri = properties.redirectUri,
-            code_verifier = codeVerifier
+            clientId = properties.clientId,
+            redirectUri = properties.redirectUri,
+            codeVerifier = codeVerifier
         )
 
         return restClient.post()
@@ -102,7 +102,32 @@ class DataGsmOAuthService(
             ?: throw IllegalStateException("DataGSM 사용자 정보 응답이 비어 있습니다.")
     }
 
-    private fun upsertMember(userInfo: DgUserInfoResponse): MemberJpaEntity {
+    private fun createCodeChallenge(codeVerifier: String): String {
+        val digest = MessageDigest.getInstance("SHA-256")
+            .digest(codeVerifier.toByteArray(Charsets.US_ASCII))
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(digest)
+    }
+
+    private fun randomUrlSafeString(byteLength: Int): String {
+        val bytes = ByteArray(byteLength)
+        secureRandom.nextBytes(bytes)
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes)
+    }
+
+    data class AuthorizationRequest(
+        val url: URI,
+        val state: String,
+        val codeVerifier: String
+    )
+}
+
+@Component
+class DataGsmPersistenceService(
+    private val memberJpaRepository: MemberJpaRepository
+) {
+
+    @Transactional
+    fun upsertMember(userInfo: DgUserInfoResponse): MemberJpaEntity {
         val student = userInfo.student
         val existingMember = student?.id?.let { memberJpaRepository.findByStudentId(it) }
             ?: memberJpaRepository.findByEmail(userInfo.email)
@@ -138,22 +163,4 @@ class DataGsmOAuthService(
             else -> MemberRole.STUDENT
         }
     }
-
-    private fun createCodeChallenge(codeVerifier: String): String {
-        val digest = MessageDigest.getInstance("SHA-256")
-            .digest(codeVerifier.toByteArray(Charsets.US_ASCII))
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(digest)
-    }
-
-    private fun randomUrlSafeString(byteLength: Int): String {
-        val bytes = ByteArray(byteLength)
-        secureRandom.nextBytes(bytes)
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes)
-    }
-
-    data class AuthorizationRequest(
-        val url: URI,
-        val state: String,
-        val codeVerifier: String
-    )
 }
