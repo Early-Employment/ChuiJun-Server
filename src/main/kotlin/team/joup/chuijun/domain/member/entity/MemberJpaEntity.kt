@@ -57,7 +57,7 @@ class MemberJpaEntity(
     var maxStreak: Int = 0,
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "badges_json", columnDefinition = "JSON")
+    @Column(name = "badges_json")
     var badgesJson: String? = null,
 
     @Column(name = "created_at", nullable = false, updatable = false)
