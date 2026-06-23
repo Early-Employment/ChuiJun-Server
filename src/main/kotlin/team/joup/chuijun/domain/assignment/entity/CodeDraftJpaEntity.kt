@@ -27,7 +27,7 @@ class CodeDraftJpaEntity(
     @Column(name = "language_code", nullable = false, length = 40)
     var languageCode: String,
 
-    @Column(name = "draft_code", nullable = false, columnDefinition = "MEDIUMTEXT")
+    @Column(name = "draft_code", nullable = false, columnDefinition = "TEXT")
     var draftCode: String,
 
     @Column(name = "started_at")
