@@ -17,10 +17,10 @@ class TestCaseJpaEntity(
     @Column(name = "case_type", nullable = false)
     var caseType: CaseType = CaseType.HIDDEN,
 
-    @Column(name = "input_text", nullable = false, columnDefinition = "MEDIUMTEXT")
+    @Column(name = "input_text", nullable = false, columnDefinition = "TEXT")
     var inputText: String,
 
-    @Column(name = "expected_output_text", nullable = false, columnDefinition = "MEDIUMTEXT")
+    @Column(name = "expected_output_text", nullable = false, columnDefinition = "TEXT")
     var expectedOutputText: String,
 
     @Column(name = "explanation_md", columnDefinition = "TEXT")

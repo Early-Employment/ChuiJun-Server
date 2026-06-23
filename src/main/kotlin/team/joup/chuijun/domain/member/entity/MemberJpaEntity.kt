@@ -1,6 +1,8 @@
 package team.joup.chuijun.domain.member.entity
 
 import jakarta.persistence.*
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 import java.time.LocalDateTime
 
 @Entity
@@ -54,7 +56,8 @@ class MemberJpaEntity(
     @Column(name = "max_streak", nullable = false)
     var maxStreak: Int = 0,
 
-    @Column(name = "badges_json", columnDefinition = "JSON")
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "badges_json")
     var badgesJson: String? = null,
 
     @Column(name = "created_at", nullable = false, updatable = false)

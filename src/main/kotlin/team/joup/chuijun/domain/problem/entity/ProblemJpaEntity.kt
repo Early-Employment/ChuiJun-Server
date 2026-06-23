@@ -2,6 +2,8 @@ package team.joup.chuijun.domain.problem.entity
 
 import team.joup.chuijun.domain.member.entity.MemberJpaEntity
 import jakarta.persistence.*
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 import java.time.LocalDateTime
 
 @Entity
@@ -21,7 +23,7 @@ class ProblemJpaEntity(
     @Column(nullable = false, length = 200)
     var title: String,
 
-    @Column(name = "description_md", nullable = false, columnDefinition = "MEDIUMTEXT")
+    @Column(name = "description_md", nullable = false, columnDefinition = "TEXT")
     var descriptionMd: String,
 
     @Column(name = "input_md", columnDefinition = "TEXT")
@@ -36,7 +38,8 @@ class ProblemJpaEntity(
     @Column(name = "primary_tag", length = 50)
     var primaryTag: String? = null,
 
-    @Column(name = "tag_list_json", columnDefinition = "JSON")
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "tag_list_json")
     var tagListJson: String? = null,
 
     @Column(nullable = false)

@@ -32,7 +32,7 @@ class SubmissionJpaEntity(
     @Column(name = "language_code", nullable = false, length = 40)
     var languageCode: String,
 
-    @Column(name = "submitted_code", nullable = false, columnDefinition = "MEDIUMTEXT")
+    @Column(name = "submitted_code", nullable = false, columnDefinition = "TEXT")
     var submittedCode: String,
 
     @Enumerated(EnumType.STRING)
