@@ -32,9 +32,9 @@ class DataGsmAuthController(
 
         return ResponseEntity.status(HttpStatus.FOUND)
             .location(authorizationRequest.url)
-            .header(HttpHeaders.SET_COOKIE, oauthCookie(STATE_COOKIE, authorizationRequest.state).toString())
-            .header(HttpHeaders.SET_COOKIE, oauthCookie(CODE_VERIFIER_COOKIE, authorizationRequest.codeVerifier).toString())
-            .header(HttpHeaders.SET_COOKIE, oauthCookie(REDIRECT_URI_COOKIE, authorizationRequest.redirectUri).toString())
+            .header(HttpHeaders.SET_COOKIE, oauthCookie("dg_oauth_state", authorizationRequest.state).toString())
+            .header(HttpHeaders.SET_COOKIE, oauthCookie("dg_oauth_code_verifier", authorizationRequest.codeVerifier).toString())
+            .header(HttpHeaders.SET_COOKIE, oauthCookie("dg_oauth_redirect_uri", authorizationRequest.redirectUri).toString())
             .build()
     }
 
@@ -43,9 +43,9 @@ class DataGsmAuthController(
     fun callback(
         @RequestParam code: String,
         @RequestParam state: String,
-        @CookieValue(name = STATE_COOKIE, required = false) savedState: String?,
-        @CookieValue(name = CODE_VERIFIER_COOKIE, required = false) codeVerifier: String?,
-        @CookieValue(name = REDIRECT_URI_COOKIE, required = false) redirectUri: String?
+        @CookieValue(name = "dg_oauth_state", required = false) savedState: String?,
+        @CookieValue(name = "dg_oauth_code_verifier", required = false) codeVerifier: String?,
+        @CookieValue(name = "dg_oauth_redirect_uri", required = false) redirectUri: String?
     ): ResponseEntity<DgLoginResponse> {
         val response = dataGsmOAuthService.login(
             code = code,
@@ -56,9 +56,9 @@ class DataGsmAuthController(
         )
 
         return ResponseEntity.ok()
-            .header(HttpHeaders.SET_COOKIE, clearCookie(STATE_COOKIE).toString())
-            .header(HttpHeaders.SET_COOKIE, clearCookie(CODE_VERIFIER_COOKIE).toString())
-            .header(HttpHeaders.SET_COOKIE, clearCookie(REDIRECT_URI_COOKIE).toString())
+            .header(HttpHeaders.SET_COOKIE, clearCookie("dg_oauth_state").toString())
+            .header(HttpHeaders.SET_COOKIE, clearCookie("dg_oauth_code_verifier").toString())
+            .header(HttpHeaders.SET_COOKIE, clearCookie("dg_oauth_redirect_uri").toString())
             .body(response)
     }
 
@@ -80,12 +80,6 @@ class DataGsmAuthController(
             .path("/auth/dg")
             .maxAge(Duration.ZERO)
             .build()
-    }
-
-    private companion object {
-        const val STATE_COOKIE = "dg_oauth_state"
-        const val CODE_VERIFIER_COOKIE = "dg_oauth_code_verifier"
-        const val REDIRECT_URI_COOKIE = "dg_oauth_redirect_uri"
     }
 }
 
