@@ -1,25 +1,27 @@
 package team.joup.chuijun.domain.auth.dto
 
-import com.fasterxml.jackson.databind.annotation.JsonNaming
-import com.fasterxml.jackson.databind.PropertyNamingStrategies
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonProperty
 import team.joup.chuijun.domain.member.entity.MemberRole
 
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+// DataGSM 토큰 엔드포인트는 snake_case JSON 을 주고받는다. 이 프로젝트는 Jackson 3(tools.jackson)
+// 런타임이라 Jackson 2 의 @JsonNaming 어노테이션이 무시되므로, 필드마다 @JsonProperty 로 명시한다.
 data class DgTokenRequest(
-    val grantType: String,
-    val code: String,
-    val clientId: String,
-    val redirectUri: String,
-    val codeVerifier: String
+    @JsonProperty("grant_type") val grantType: String,
+    @JsonProperty("code") val code: String,
+    @JsonProperty("client_id") val clientId: String,
+    @JsonProperty("redirect_uri") val redirectUri: String,
+    @JsonProperty("code_verifier") val codeVerifier: String
 )
 
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class DgTokenResponse(
-    val accessToken: String,
-    val refreshToken: String,
-    val expiresIn: Int
+    @JsonProperty("access_token") val accessToken: String,
+    @JsonProperty("refresh_token") val refreshToken: String,
+    @JsonProperty("expires_in") val expiresIn: Int
 )
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class DgUserInfoResponse(
     val id: Long,
     val email: String,
@@ -28,6 +30,7 @@ data class DgUserInfoResponse(
     val student: DgStudentResponse?
 )
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class DgStudentResponse(
     val id: Long,
     val name: String,
