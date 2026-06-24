@@ -10,7 +10,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.CookieValue
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -62,17 +61,21 @@ class DataGsmAuthController(
             .header(HttpHeaders.SET_COOKIE, clearCookie("dg_oauth_state").toString())
             .header(HttpHeaders.SET_COOKIE, clearCookie("dg_oauth_code_verifier").toString())
             .header(HttpHeaders.SET_COOKIE, clearCookie("dg_oauth_redirect_uri").toString())
-            .body(response)
+            .header(HttpHeaders.SET_COOKIE, refreshTokenCookie(response.refreshToken).toString())
+            .body(response.copy(refreshToken = ""))
     }
 
-    @Operation(summary = "토큰 갱신", description = "Refresh Token으로 새 Access Token을 발급합니다.")
+    @Operation(summary = "토큰 갱신", description = "HttpOnly 쿠키의 Refresh Token으로 새 Access Token을 발급합니다.")
     @PostMapping("/refresh")
     fun refresh(
-        @RequestHeader("Authorization") authorization: String
+        @CookieValue(name = "dg_refresh_token", required = false) refreshToken: String?
     ): ResponseEntity<DgRefreshResponse> {
-        val refreshToken = authorization.removePrefix("Bearer ").trim()
+        requireNotNull(refreshToken) { "Refresh Token 쿠키가 없습니다. 다시 로그인해 주세요." }
         val response = dataGsmOAuthService.refreshToken(refreshToken)
-        return ResponseEntity.ok(response)
+
+        return ResponseEntity.ok()
+            .header(HttpHeaders.SET_COOKIE, refreshTokenCookie(response.refreshToken).toString())
+            .body(response.copy(refreshToken = ""))
     }
 
     private fun oauthCookie(name: String, value: String): ResponseCookie {
@@ -82,6 +85,16 @@ class DataGsmAuthController(
             .sameSite("Lax")
             .path("/auth/dg")
             .maxAge(Duration.ofMinutes(5))
+            .build()
+    }
+
+    private fun refreshTokenCookie(value: String): ResponseCookie {
+        return ResponseCookie.from("dg_refresh_token", value)
+            .httpOnly(true)
+            .secure(properties.cookieSecure)
+            .sameSite("Lax")
+            .path("/auth/dg/refresh")
+            .maxAge(Duration.ofDays(30))
             .build()
     }
 
