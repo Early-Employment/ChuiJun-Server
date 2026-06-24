@@ -9,13 +9,13 @@ import org.springframework.web.util.UriComponentsBuilder
 import team.joup.chuijun.domain.auth.config.DataGsmOAuthProperties
 import team.joup.chuijun.domain.auth.dto.DgLoginResponse
 import team.joup.chuijun.domain.auth.dto.DgRefreshResponse
-import team.joup.chuijun.domain.auth.dto.DgTokenRefreshRequest
 import team.joup.chuijun.domain.auth.dto.DgTokenRequest
 import team.joup.chuijun.domain.auth.dto.DgTokenResponse
 import team.joup.chuijun.domain.auth.dto.DgUserInfoResponse
 import team.joup.chuijun.domain.member.entity.MemberJpaEntity
 import team.joup.chuijun.domain.member.entity.MemberRole
 import team.joup.chuijun.domain.member.repository.MemberJpaRepository
+import team.joup.chuijun.global.jwt.JwtProvider
 import java.net.URI
 import java.security.MessageDigest
 import java.security.SecureRandom
@@ -26,7 +26,8 @@ import java.util.Base64
 class DataGsmOAuthService(
     private val properties: DataGsmOAuthProperties,
     private val restClient: RestClient,
-    private val persistenceService: DataGsmPersistenceService
+    private val persistenceService: DataGsmPersistenceService,
+    private val jwtProvider: JwtProvider
 ) {
 
     private val secureRandom = SecureRandom()
@@ -56,45 +57,48 @@ class DataGsmOAuthService(
         return AuthorizationRequest(url, state, codeVerifier, redirectUri)
     }
 
-    fun login(code: String, state: String, savedState: String?, codeVerifier: String?, redirectUri: String?): DgLoginResponse {
+    fun login(
+        code: String,
+        state: String,
+        savedState: String?,
+        codeVerifier: String?,
+        redirectUri: String?
+    ): Pair<DgLoginResponse, String> {
         require(savedState != null && codeVerifier != null) { "OAuth 인증 쿠키가 없습니다. 로그인을 다시 시작해 주세요." }
         require(state == savedState) { "OAuth state 값이 일치하지 않습니다." }
         val resolvedRedirectUri = redirectUri.validConfigValue("OAuth redirect_uri")
 
-        val token = exchangeToken(code, codeVerifier, resolvedRedirectUri)
-        val userInfo = getUserInfo(token.accessToken)
+        val dgToken = exchangeToken(code, codeVerifier, resolvedRedirectUri)
+        val userInfo = getUserInfo(dgToken.accessToken)
         val member = persistenceService.upsertMember(userInfo)
 
+        val memberId = checkNotNull(member.id) { "회원 데이터의 식별자가 누락되었습니다." }
+        val accessToken = jwtProvider.generateAccessToken(memberId, member.role.name)
+        val refreshToken = jwtProvider.generateRefreshToken(memberId)
+
         return DgLoginResponse(
-            memberId = checkNotNull(member.id) { "회원 데이터의 식별자가 누락되었습니다." },
+            memberId = memberId,
             email = member.email,
             name = member.name,
             role = member.role,
-            accessToken = token.accessToken,
-            refreshToken = token.refreshToken,
-            expiresIn = token.expiresIn
-        )
+            accessToken = accessToken,
+            expiresIn = properties.accessTokenExpiration.toInt()
+        ) to refreshToken
     }
 
-    fun refreshToken(refreshToken: String): DgRefreshResponse {
-        val request = DgTokenRefreshRequest(
-            refreshToken = refreshToken,
-            clientId = properties.clientId.validConfigValue("DATAGSM_CLIENT_ID")
-        )
+    fun refreshToken(refreshToken: String): Pair<DgRefreshResponse, String> {
+        require(jwtProvider.validate(refreshToken)) { "Refresh Token이 유효하지 않습니다." }
 
-        val response = restClient.post()
-            .uri("${properties.authorizationBaseUrl}/v1/oauth/token")
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(request)
-            .retrieve()
-            .body(DgTokenResponse::class.java)
-            ?: throw IllegalStateException("DataGSM 토큰 갱신 응답이 비어 있습니다.")
+        val memberId = jwtProvider.getMemberId(refreshToken)
+        val member = persistenceService.findMemberById(memberId)
+
+        val newAccessToken = jwtProvider.generateAccessToken(memberId, member.role.name)
+        val newRefreshToken = jwtProvider.generateRefreshToken(memberId)
 
         return DgRefreshResponse(
-            accessToken = response.accessToken,
-            refreshToken = response.refreshToken,
-            expiresIn = response.expiresIn
-        )
+            accessToken = newAccessToken,
+            expiresIn = properties.accessTokenExpiration.toInt()
+        ) to newRefreshToken
     }
 
     private fun exchangeToken(code: String, codeVerifier: String, redirectUri: String): DgTokenResponse {
@@ -185,6 +189,12 @@ class DataGsmPersistenceService(
         member.updatedAt = now
 
         return memberJpaRepository.save(member)
+    }
+
+    fun findMemberById(memberId: Long): MemberJpaEntity {
+        return memberJpaRepository.findById(memberId).orElseThrow {
+            IllegalArgumentException("존재하지 않는 회원입니다.")
+        }
     }
 
     private fun resolveMemberRole(userRole: String, studentRole: String?): MemberRole {

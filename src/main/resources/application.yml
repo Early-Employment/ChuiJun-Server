@@ -25,3 +25,8 @@ datagsm:
         authorization-base-url: ${DATAGSM_AUTHORIZATION_BASE_URL:https://oauth.authorization.datagsm.kr}
         resource-base-url: ${DATAGSM_RESOURCE_BASE_URL:https://oauth.resource.datagsm.kr}
         cookie-secure: ${DATAGSM_COOKIE_SECURE:false}
+
+jwt:
+    secret: ${JWT_SECRET}
+    access-token-expiration: 3600
+    refresh-token-expiration: 2592000

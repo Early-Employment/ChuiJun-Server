@@ -49,7 +49,7 @@ class DataGsmAuthController(
         @CookieValue(name = "dg_oauth_code_verifier", required = false) codeVerifier: String?,
         @CookieValue(name = "dg_oauth_redirect_uri", required = false) redirectUri: String?
     ): ResponseEntity<DgLoginResponse> {
-        val response = dataGsmOAuthService.login(
+        val (response, refreshToken) = dataGsmOAuthService.login(
             code = code,
             state = state,
             savedState = savedState,
@@ -61,8 +61,8 @@ class DataGsmAuthController(
             .header(HttpHeaders.SET_COOKIE, clearCookie("dg_oauth_state").toString())
             .header(HttpHeaders.SET_COOKIE, clearCookie("dg_oauth_code_verifier").toString())
             .header(HttpHeaders.SET_COOKIE, clearCookie("dg_oauth_redirect_uri").toString())
-            .header(HttpHeaders.SET_COOKIE, refreshTokenCookie(response.refreshToken).toString())
-            .body(response.copy(refreshToken = ""))
+            .header(HttpHeaders.SET_COOKIE, refreshTokenCookie(refreshToken).toString())
+            .body(response)
     }
 
     @Operation(summary = "토큰 갱신", description = "HttpOnly 쿠키의 Refresh Token으로 새 Access Token을 발급합니다.")
@@ -71,11 +71,11 @@ class DataGsmAuthController(
         @CookieValue(name = "dg_refresh_token", required = false) refreshToken: String?
     ): ResponseEntity<DgRefreshResponse> {
         requireNotNull(refreshToken) { "Refresh Token 쿠키가 없습니다. 다시 로그인해 주세요." }
-        val response = dataGsmOAuthService.refreshToken(refreshToken)
+        val (response, newRefreshToken) = dataGsmOAuthService.refreshToken(refreshToken)
 
         return ResponseEntity.ok()
-            .header(HttpHeaders.SET_COOKIE, refreshTokenCookie(response.refreshToken).toString())
-            .body(response.copy(refreshToken = ""))
+            .header(HttpHeaders.SET_COOKIE, refreshTokenCookie(newRefreshToken).toString())
+            .body(response)
     }
 
     private fun oauthCookie(name: String, value: String): ResponseCookie {

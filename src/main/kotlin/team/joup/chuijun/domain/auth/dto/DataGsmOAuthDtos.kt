@@ -12,12 +12,6 @@ data class DgTokenRequest(
     @JsonProperty("code_verifier") val codeVerifier: String
 )
 
-data class DgTokenRefreshRequest(
-    @JsonProperty("grant_type") val grantType: String = "refresh_token",
-    @JsonProperty("refresh_token") val refreshToken: String,
-    @JsonProperty("client_id") val clientId: String
-)
-
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class DgTokenResponse(
     @JsonProperty("access_token") val accessToken: String,
@@ -51,18 +45,18 @@ data class DgStudentResponse(
     val isLeaveSchool: Boolean?
 )
 
+// refreshToken 필드 제거 (쿠키로 내려감)
 data class DgLoginResponse(
     val memberId: Long,
     val email: String,
     val name: String,
     val role: MemberRole,
     val accessToken: String,
-    val refreshToken: String,
     val expiresIn: Int
 )
 
+// refreshToken 필드 제거 (쿠키로 내려감)
 data class DgRefreshResponse(
     val accessToken: String,
-    val refreshToken: String,
     val expiresIn: Int
 )
