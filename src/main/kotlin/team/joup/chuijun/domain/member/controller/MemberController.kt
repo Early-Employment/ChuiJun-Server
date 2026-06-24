@@ -66,7 +66,8 @@ class MemberController(
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
         }
 
-        val response = memberService.getMemberProfileByEmail(userDetails.username)
+        // JwtAuthenticationFilter 가 principal 의 username 을 memberId 로 채운다.
+        val response = memberService.getMemberProfile(userDetails.username.toLong())
         return ResponseEntity.ok(response)
     }
 }

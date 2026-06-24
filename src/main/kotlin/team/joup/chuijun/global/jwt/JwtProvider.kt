@@ -41,6 +41,16 @@ class JwtProvider(private val properties: JwtProperties) {
             .toLong()
     }
 
+    fun getRole(token: String): String {
+        return Jwts.parser()
+            .verifyWith(key)
+            .build()
+            .parseSignedClaims(token)
+            .payload
+            .get("role", String::class.java)
+            ?: "STUDENT"
+    }
+
     fun validate(token: String): Boolean {
         return runCatching {
             Jwts.parser().verifyWith(key).build().parseSignedClaims(token)
