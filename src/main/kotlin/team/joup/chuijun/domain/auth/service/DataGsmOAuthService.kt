@@ -8,6 +8,8 @@ import org.springframework.web.client.RestClient
 import org.springframework.web.util.UriComponentsBuilder
 import team.joup.chuijun.domain.auth.config.DataGsmOAuthProperties
 import team.joup.chuijun.domain.auth.dto.DgLoginResponse
+import team.joup.chuijun.domain.auth.dto.DgRefreshResponse
+import team.joup.chuijun.domain.auth.dto.DgTokenRefreshRequest
 import team.joup.chuijun.domain.auth.dto.DgTokenRequest
 import team.joup.chuijun.domain.auth.dto.DgTokenResponse
 import team.joup.chuijun.domain.auth.dto.DgUserInfoResponse
@@ -71,6 +73,27 @@ class DataGsmOAuthService(
             accessToken = token.accessToken,
             refreshToken = token.refreshToken,
             expiresIn = token.expiresIn
+        )
+    }
+
+    fun refreshToken(refreshToken: String): DgRefreshResponse {
+        val request = DgTokenRefreshRequest(
+            refreshToken = refreshToken,
+            clientId = properties.clientId.validConfigValue("DATAGSM_CLIENT_ID")
+        )
+
+        val response = restClient.post()
+            .uri("${properties.authorizationBaseUrl}/v1/oauth/token")
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(request)
+            .retrieve()
+            .body(DgTokenResponse::class.java)
+            ?: throw IllegalStateException("DataGSM 토큰 갱신 응답이 비어 있습니다.")
+
+        return DgRefreshResponse(
+            accessToken = response.accessToken,
+            refreshToken = response.refreshToken,
+            expiresIn = response.expiresIn
         )
     }
 

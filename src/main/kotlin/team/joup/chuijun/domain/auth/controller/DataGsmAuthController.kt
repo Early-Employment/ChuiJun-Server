@@ -9,11 +9,14 @@ import org.springframework.http.ResponseCookie
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.CookieValue
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import team.joup.chuijun.domain.auth.config.DataGsmOAuthProperties
 import team.joup.chuijun.domain.auth.dto.DgLoginResponse
+import team.joup.chuijun.domain.auth.dto.DgRefreshResponse
 import team.joup.chuijun.domain.auth.service.DataGsmOAuthService
 import java.time.Duration
 
@@ -60,6 +63,16 @@ class DataGsmAuthController(
             .header(HttpHeaders.SET_COOKIE, clearCookie("dg_oauth_code_verifier").toString())
             .header(HttpHeaders.SET_COOKIE, clearCookie("dg_oauth_redirect_uri").toString())
             .body(response)
+    }
+
+    @Operation(summary = "토큰 갱신", description = "Refresh Token으로 새 Access Token을 발급합니다.")
+    @PostMapping("/refresh")
+    fun refresh(
+        @RequestHeader("Authorization") authorization: String
+    ): ResponseEntity<DgRefreshResponse> {
+        val refreshToken = authorization.removePrefix("Bearer ").trim()
+        val response = dataGsmOAuthService.refreshToken(refreshToken)
+        return ResponseEntity.ok(response)
     }
 
     private fun oauthCookie(name: String, value: String): ResponseCookie {
