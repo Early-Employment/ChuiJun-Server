@@ -1,5 +1,6 @@
 package team.joup.chuijun.global.jwt
 
+import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
 import org.springframework.stereotype.Component
@@ -41,14 +42,15 @@ class JwtProvider(private val properties: JwtProperties) {
             .toLong()
     }
 
-    fun getRole(token: String): String {
-        return Jwts.parser()
-            .verifyWith(key)
-            .build()
-            .parseSignedClaims(token)
-            .payload
-            .get("role", String::class.java)
-            ?: "STUDENT"
+    // 토큰을 한 번만 파싱·검증해 Claims 를 돌려준다. 무효/만료면 null.
+    fun getClaims(token: String): Claims? {
+        return runCatching {
+            Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token)
+                .payload
+        }.getOrNull()
     }
 
     fun validate(token: String): Boolean {

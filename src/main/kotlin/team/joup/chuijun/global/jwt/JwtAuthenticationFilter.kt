@@ -28,16 +28,17 @@ class JwtAuthenticationFilter(
         filterChain: FilterChain
     ) {
         val token = resolveToken(request)
-        if (token != null &&
-            jwtProvider.validate(token) &&
-            SecurityContextHolder.getContext().authentication == null
-        ) {
-            val memberId = jwtProvider.getMemberId(token)
-            val authorities = listOf(SimpleGrantedAuthority("ROLE_${jwtProvider.getRole(token)}"))
-            val principal = User(memberId.toString(), "", authorities)
-            val authentication = UsernamePasswordAuthenticationToken(principal, null, authorities)
-            authentication.details = WebAuthenticationDetailsSource().buildDetails(request)
-            SecurityContextHolder.getContext().authentication = authentication
+        if (token != null && SecurityContextHolder.getContext().authentication == null) {
+            // 토큰 검증·파싱을 한 번만 수행한다(무효/만료면 null).
+            val claims = jwtProvider.getClaims(token)
+            if (claims != null) {
+                val role = claims.get("role", String::class.java) ?: "STUDENT"
+                val authorities = listOf(SimpleGrantedAuthority("ROLE_$role"))
+                val principal = User(claims.subject, "", authorities)
+                val authentication = UsernamePasswordAuthenticationToken(principal, null, authorities)
+                authentication.details = WebAuthenticationDetailsSource().buildDetails(request)
+                SecurityContextHolder.getContext().authentication = authentication
+            }
         }
 
         filterChain.doFilter(request, response)
