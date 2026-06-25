@@ -82,6 +82,7 @@ class DataGsmOAuthService(
             name = member.name,
             role = member.role,
             accessToken = accessToken,
+            refreshToken = refreshToken,
             expiresIn = properties.accessTokenExpiration.toInt()
         ) to refreshToken
     }
@@ -97,6 +98,7 @@ class DataGsmOAuthService(
 
         return DgRefreshResponse(
             accessToken = newAccessToken,
+            refreshToken = newRefreshToken,
             expiresIn = properties.accessTokenExpiration.toInt()
         ) to newRefreshToken
     }

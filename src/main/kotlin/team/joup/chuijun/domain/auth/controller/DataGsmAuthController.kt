@@ -68,7 +68,7 @@ class DataGsmAuthController(
     @Operation(summary = "토큰 갱신", description = "HttpOnly 쿠키의 Refresh Token으로 새 Access Token을 발급합니다.")
     @PostMapping("/refresh")
     fun refresh(
-        @CookieValue(name = "dg_refresh_token", required = false) refreshToken: String?
+        @CookieValue(name = "refreshToken", required = false) refreshToken: String?
     ): ResponseEntity<DgRefreshResponse> {
         requireNotNull(refreshToken) { "Refresh Token 쿠키가 없습니다. 다시 로그인해 주세요." }
         val (response, newRefreshToken) = dataGsmOAuthService.refreshToken(refreshToken)
@@ -89,7 +89,7 @@ class DataGsmAuthController(
     }
 
     private fun refreshTokenCookie(value: String): ResponseCookie {
-        return ResponseCookie.from("dg_refresh_token", value)
+        return ResponseCookie.from("refreshToken", value)
             .httpOnly(true)
             .secure(properties.cookieSecure)
             .sameSite("Lax")

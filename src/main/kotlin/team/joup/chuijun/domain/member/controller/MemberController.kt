@@ -66,7 +66,11 @@ class MemberController(
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
         }
 
-        val response = memberService.getMemberProfileByEmail(userDetails.username)
+        // JwtAuthenticationFilter 가 principal 의 username 을 memberId 로 채운다.
+        // 숫자가 아닌 username(테스트 더미 등)이면 NumberFormatException 대신 401 로 방어한다.
+        val memberId = userDetails.username.toLongOrNull()
+            ?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
+        val response = memberService.getMemberProfile(memberId)
         return ResponseEntity.ok(response)
     }
 }

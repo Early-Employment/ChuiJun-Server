@@ -45,18 +45,19 @@ data class DgStudentResponse(
     val isLeaveSchool: Boolean?
 )
 
-// refreshToken 필드 제거 (쿠키로 내려감)
+// refreshToken 은 응답 바디로 내려주고, 동시에 HttpOnly 쿠키(refreshToken)로도 내려간다.
 data class DgLoginResponse(
     val memberId: Long,
     val email: String,
     val name: String,
     val role: MemberRole,
     val accessToken: String,
+    val refreshToken: String,
     val expiresIn: Int
 )
 
-// refreshToken 필드 제거 (쿠키로 내려감)
 data class DgRefreshResponse(
     val accessToken: String,
+    val refreshToken: String,
     val expiresIn: Int
 )

@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.client.RestClientResponseException
 import java.util.NoSuchElementException
 
 @RestControllerAdvice
@@ -28,6 +29,20 @@ class GlobalExceptionHandler {
             status = HttpStatus.BAD_REQUEST.value(),
             error = HttpStatus.BAD_REQUEST.reasonPhrase,
             message = e.message ?: "잘못된 요청입니다."
+        )
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse)
+    }
+
+    @ExceptionHandler(RestClientResponseException::class)
+    fun handleRestClientResponseException(e: RestClientResponseException): ResponseEntity<ErrorResponse> {
+        // DataGSM OAuth 연동(토큰 교환·userinfo) 호출이 4xx/5xx 로 실패한 경우.
+        // 인가 코드 재사용·만료가 대표적이며, 처리하지 않으면 콜백이 메시지 없는 500 으로 떨어진다.
+        logger.error("DataGSM 연동 호출 실패: status={}, body={}", e.statusCode, e.responseBodyAsString, e)
+
+        val errorResponse = ErrorResponse(
+            status = HttpStatus.BAD_REQUEST.value(),
+            error = HttpStatus.BAD_REQUEST.reasonPhrase,
+            message = "DataGSM 인증에 실패했습니다. 로그인을 다시 시도해 주세요."
         )
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse)
     }
