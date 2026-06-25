@@ -53,4 +53,13 @@ class SubmissionJpaEntity(
 
     @Column(name = "judged_at")
     var judgedAt: LocalDateTime? = null
-)
+) {
+
+    fun completeJudge(status: JudgeStatus, finalScore: Int) {
+        require(finalScore >= 0) { "Score cannot be negative: $finalScore" }
+
+        this.judgeStatus = status
+        this.score = finalScore
+        this.judgedAt = LocalDateTime.now()
+    }
+}
