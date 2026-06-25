@@ -61,6 +61,9 @@ class ProblemJpaEntity(
     @Column(name = "accepted_count", nullable = false)
     var acceptedCount: Int = 0,
 
+    @Version
+    val version: Long = 0L,
+
     @Column(name = "created_at", nullable = false, updatable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
 
@@ -79,7 +82,7 @@ class ProblemJpaEntity(
     }
 
     fun getAcceptRate(): Double {
-        if (submitCount == 0) return 0.0
-        return (acceptedCount.toDouble() / submitCount.toDouble()) * 100
+        if (submitCount <= 0) return 0.0
+        return ((acceptedCount.toDouble() / submitCount) * 100).coerceIn(0.0, 100.0)
     }
 }
