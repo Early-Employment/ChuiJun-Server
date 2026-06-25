@@ -6,5 +6,6 @@ data class GetProblemListResponse(
     val title: String,
     val level: Byte,
     val primaryTag: String?,
-    val point: Int
+    val point: Int,
+    val acceptRate: Double
 )
