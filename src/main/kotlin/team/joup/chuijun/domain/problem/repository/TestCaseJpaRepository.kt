@@ -9,4 +9,6 @@ interface TestCaseJpaRepository : JpaRepository<TestCaseJpaEntity, Long> {
         problemId: Long,
         caseType: CaseType
     ): List<TestCaseJpaEntity>
+
+    fun deleteByProblemId(problemId: Long)
 }
