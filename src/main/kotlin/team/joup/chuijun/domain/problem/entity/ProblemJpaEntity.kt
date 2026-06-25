@@ -55,9 +55,31 @@ class ProblemJpaEntity(
     @Column(nullable = false)
     var status: ProblemStatus = ProblemStatus.DRAFT,
 
+    @Column(name = "submit_count", nullable = false)
+    var submitCount: Int = 0,
+
+    @Column(name = "accepted_count", nullable = false)
+    var acceptedCount: Int = 0,
+
     @Column(name = "created_at", nullable = false, updatable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
 
     @Column(name = "updated_at", nullable = false)
     var updatedAt: LocalDateTime = LocalDateTime.now()
-)
+) {
+
+    fun increaseSubmitCount() {
+        this.submitCount++
+        this.updatedAt = LocalDateTime.now()
+    }
+
+    fun increaseAcceptedCount() {
+        this.acceptedCount++
+        this.updatedAt = LocalDateTime.now()
+    }
+
+    fun getAcceptRate(): Double {
+        if (submitCount == 0) return 0.0
+        return (acceptedCount.toDouble() / submitCount.toDouble()) * 100
+    }
+}
