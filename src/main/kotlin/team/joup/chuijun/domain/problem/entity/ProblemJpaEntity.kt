@@ -83,6 +83,8 @@ class ProblemJpaEntity(
 
     fun getAcceptRate(): Double {
         if (submitCount <= 0) return 0.0
-        return ((acceptedCount.toDouble() / submitCount) * 100).coerceIn(0.0, 100.0)
+        val rawRate = (acceptedCount.toDouble() / submitCount) * 100
+
+        return (kotlin.math.round(rawRate * 10) / 10.0).coerceIn(0.0, 100.0)
     }
 }

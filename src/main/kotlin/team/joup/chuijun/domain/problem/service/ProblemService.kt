@@ -33,7 +33,8 @@ class ProblemService(
                 title = problem.title,
                 level = problem.level,
                 primaryTag = problem.primaryTag,
-                point = problem.point
+                point = problem.point,
+                acceptRate = problem.getAcceptRate()
             )
         }
     }
@@ -67,7 +68,8 @@ class ProblemService(
             point = problem.point,
             timeLimitMs = problem.timeLimitMs,
             memoryLimitKb = problem.memoryLimitKb,
-            testCases = testCases
+            testCases = testCases,
+            acceptRate = problem.getAcceptRate()
         )
     }
 }

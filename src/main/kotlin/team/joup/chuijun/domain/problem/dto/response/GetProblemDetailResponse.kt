@@ -12,7 +12,8 @@ data class GetProblemDetailResponse(
     val point: Int,
     val timeLimitMs: Int,
     val memoryLimitKb: Int,
-    val testCases: List<TestCaseDto>
+    val testCases: List<TestCaseDto>,
+    val acceptRate: Double
 )
 
 data class TestCaseDto(
