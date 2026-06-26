@@ -62,7 +62,7 @@ class ProblemController(
     ])
     @PostMapping
     fun createProblem(
-        @RequestBody @Valid request: CreateProblemRequest // 👈 리뷰 반영: @Valid 추가
+        @RequestBody @Valid request: CreateProblemRequest
     ): ResponseEntity<Long> {
         val problemId = problemService.createProblem(request)
         return ResponseEntity.status(HttpStatus.CREATED).body(problemId)
@@ -77,7 +77,7 @@ class ProblemController(
     fun updateProblem(
         @Parameter(description = "수정하고자 하는 기존 문제의 고유 식별자(ID)", example = "1", required = true)
         @PathVariable("problemId") problemId: Long,
-        @RequestBody @Valid request: UpdateProblemRequest // 👈 리뷰 반영: @Valid 추가
+        @RequestBody @Valid request: UpdateProblemRequest
     ): ResponseEntity<Void> {
         problemService.updateProblem(problemId, request)
         return ResponseEntity.noContent().build()

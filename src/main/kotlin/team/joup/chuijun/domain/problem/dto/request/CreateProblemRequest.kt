@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotEmpty
 import jakarta.validation.constraints.Size
 import team.joup.chuijun.domain.problem.entity.CaseType
+import team.joup.chuijun.domain.problem.entity.ProblemLevel
 import team.joup.chuijun.domain.problem.entity.ProblemStatus
 
 data class CreateProblemRequest(
@@ -21,7 +22,7 @@ data class CreateProblemRequest(
 
     val inputMd: String?,
     val outputMd: String?,
-    val level: Byte,
+    val level: ProblemLevel,
     val primaryTag: String?,
     val tagListJson: String?,
     val point: Int,

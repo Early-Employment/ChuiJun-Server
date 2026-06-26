@@ -2,6 +2,7 @@ package team.joup.chuijun.domain.member.dto.response
 
 import io.swagger.v3.oas.annotations.media.Schema
 import team.joup.chuijun.domain.member.entity.MemberTier
+import team.joup.chuijun.domain.problem.entity.ProblemLevel
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -56,7 +57,7 @@ data class GetRecentActivityDto(
     val problemTitle: String,
 
     @Schema(description = "문제 레벨", example = "2")
-    val problemLevel: Byte,
+    val problemLevel: Int,
 
     @Schema(description = "최종 점수", example = "100")
     val score: Int,

@@ -77,7 +77,7 @@ class MemberService(
             GetRecentActivityDto(
                 submissionId = checkNotNull(submission.id) { "제출 데이터의 식별자가 누락되었습니다." },
                 problemTitle = submission.problem?.title ?: "삭제된 문제",
-                problemLevel = submission.problem?.level ?: 0,
+                problemLevel = submission.problem?.level?.levelValue ?: 0,
                 score = submission.score,
                 submittedAt = submission.submittedAt
             )
