@@ -78,6 +78,7 @@ class ProblemService(
         )
     }
 
+    @Transactional // 👈 리뷰 반영: 명시적 쓰기 트랜잭션을 부여하여 원자적 처리 보장
     fun createProblem(request: CreateProblemRequest): Long {
         val problem = ProblemJpaEntity(
             problemCode = request.problemCode,
@@ -111,8 +112,7 @@ class ProblemService(
         return checkNotNull(savedProblem.id)
     }
 
-
-    @Transactional
+    @Transactional // 👈 리뷰 반영: 쓰기 트랜잭션 처리
     fun updateProblem(problemId: Long, request: UpdateProblemRequest) {
         val problem = problemJpaRepository.findByIdOrNull(problemId)
             ?: throw NoSuchElementException("존재하지 않는 문제입니다. ID: $problemId")
@@ -146,7 +146,7 @@ class ProblemService(
         testCaseJpaRepository.saveAll(newTestCases)
     }
 
-    @Transactional
+    @Transactional // 👈 리뷰 반영: 쓰기 트랜잭션 처리
     fun deleteProblem(problemId: Long) {
         val problem = problemJpaRepository.findByIdOrNull(problemId)
             ?: throw NoSuchElementException("존재하지 않는 문제입니다. ID: $problemId")
