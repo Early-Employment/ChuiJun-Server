@@ -32,8 +32,9 @@ class ProblemJpaEntity(
     @Column(name = "output_md", columnDefinition = "TEXT")
     var outputMd: String? = null,
 
-    @Column(nullable = false)
-    var level: Byte,
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    var level: ProblemLevel,
 
     @Column(name = "primary_tag", length = 50)
     var primaryTag: String? = null,
@@ -41,9 +42,6 @@ class ProblemJpaEntity(
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "tag_list_json")
     var tagListJson: String? = null,
-
-    @Column(nullable = false)
-    var point: Int = 10,
 
     @Column(name = "time_limit_ms", nullable = false)
     var timeLimitMs: Int = 1000,
@@ -71,6 +69,9 @@ class ProblemJpaEntity(
     var updatedAt: LocalDateTime = LocalDateTime.now()
 ) {
 
+    val point: Int
+        get() = level.score
+
     fun increaseSubmitCount() {
         this.submitCount++
         this.updatedAt = LocalDateTime.now()
@@ -83,8 +84,7 @@ class ProblemJpaEntity(
 
     fun getAcceptRate(): Double {
         if (submitCount <= 0) return 0.0
-        val rawRate = (acceptedCount.toDouble() / submitCount) * 100
-
-        return (kotlin.math.round(rawRate * 10) / 10.0).coerceIn(0.0, 100.0)
+        val roundedRate = kotlin.math.round((acceptedCount.toDouble() / submitCount) * 100 * 10) / 10.0
+        return roundedRate.coerceIn(0.0, 100.0)
     }
 }
