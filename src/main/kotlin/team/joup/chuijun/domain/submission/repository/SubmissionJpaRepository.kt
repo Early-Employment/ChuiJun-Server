@@ -1,6 +1,5 @@
 package team.joup.chuijun.domain.submission.repository
 
-import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
@@ -14,7 +13,7 @@ interface SubmissionJpaRepository : JpaRepository<SubmissionJpaEntity, Long> {
     fun findByMemberId(
         @Param("memberId") memberId: Long,
         pageable: Pageable
-    ): Page<SubmissionJpaEntity>
+    ): List<SubmissionJpaEntity>
 
     fun existsByMemberIdAndProblemIdAndJudgeStatusIn(
         memberId: Long,

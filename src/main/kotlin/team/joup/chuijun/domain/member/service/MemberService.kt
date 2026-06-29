@@ -81,7 +81,7 @@ class MemberService(
                 score = submission.score,
                 submittedAt = submission.submittedAt
             )
-        }.toList()
+        }
 
         return GetMemberProfileResponse(
             memberId = memberId,
