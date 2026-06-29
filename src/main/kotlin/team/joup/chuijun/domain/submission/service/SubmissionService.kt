@@ -21,9 +21,9 @@ class SubmissionService(
 ) {
 
     @Transactional
-    fun submitProblem(request: SubmitProblemRequest): SubmitProblemResponse {
-        val member = memberJpaRepository.findByIdOrNull(request.memberId)
-            ?: throw NoSuchElementException("존재하지 않는 회원입니다. ID: ${request.memberId}")
+    fun submitProblem(memberId: Long, request: SubmitProblemRequest): SubmitProblemResponse {
+        val member = memberJpaRepository.findByIdWithPessimisticLock(memberId)
+            ?: throw NoSuchElementException("존재하지 않는 회원입니다. ID: $memberId")
 
         val problem = problemJpaRepository.findByIdOrNull(request.problemId)
             ?: throw NoSuchElementException("존재하지 않는 문제입니다. ID: ${request.problemId}")
@@ -36,7 +36,11 @@ class SubmissionService(
             studySeconds = request.studySeconds
         )
 
-        val isAlreadyPassed = submissionJpaRepository.existsPassedSubmission(member.id!!, problem.id!!)
+        val isAlreadyPassed = submissionJpaRepository.existsByMemberIdAndProblemIdAndJudgeStatusIn(
+            member.id!!,
+            problem.id!!,
+            listOf(JudgeStatus.PASSED, JudgeStatus.AC)
+        )
 
         submission.completeJudge(request.judgeStatus, request.score)
         val savedSubmission = submissionJpaRepository.save(submission)

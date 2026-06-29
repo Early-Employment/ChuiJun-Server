@@ -25,7 +25,8 @@ class SubmissionController(
     fun submitProblem(
         @RequestBody @Valid request: SubmitProblemRequest
     ): ResponseEntity<SubmitProblemResponse> {
-        val response = submissionService.submitProblem(request)
+        val mockMemberId = 1L
+        val response = submissionService.submitProblem(mockMemberId, request)
         return ResponseEntity.status(HttpStatus.CREATED).body(response)
     }
 }
