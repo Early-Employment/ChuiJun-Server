@@ -23,6 +23,6 @@ class ClassroomJpaEntity(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null
 
-    @Column(name = "invite_code", nullable = true, length = 6)
+    @Column(name = "invite_code", nullable = true, unique = true, length = 6)
     var inviteCode: String? = null
 }

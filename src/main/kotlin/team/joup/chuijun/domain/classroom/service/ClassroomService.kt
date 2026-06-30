@@ -44,7 +44,7 @@ class ClassroomService(
     }
 
     fun getClassroomsByTeacher(teacherId: Long): List<ClassroomResponse> {
-        val classrooms = classroomJpaRepository.findAll().filter { it.teacher.id == teacherId }
+        val classrooms = classroomJpaRepository.findByTeacherId(teacherId)
         return classrooms.map { it.toResponse() }
     }
 

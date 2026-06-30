@@ -50,7 +50,7 @@ class ClassroomMemberController(
 
     @Operation(summary = "학생 추방", description = "특정 학생을 학급에서 탈퇴시킵니다. 해당 학급의 담당 선생님 또는 관리자만 가능합니다.")
     @ApiResponses(value = [
-        ApiResponse(responseCode = "24", description = "학생 추방 성공"),
+        ApiResponse(responseCode = "204", description = "학생 추방 성공"),
         ApiResponse(responseCode = "400", description = "권한이 없거나 잘못된 요청"),
         ApiResponse(responseCode = "404", description = "학급에 가입되지 않은 학생이거나 리소스 없음")
     ])

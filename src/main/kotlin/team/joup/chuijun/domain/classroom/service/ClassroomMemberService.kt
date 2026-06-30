@@ -65,8 +65,7 @@ class ClassroomMemberService(
 
     @Transactional
     fun kickStudent(requestorId: Long, classroomId: Long, studentId: Long) {
-        val classroomMember = classroomMemberJpaRepository.findAll()
-            .find { it.classroom.id == classroomId && it.student.id == studentId }
+        val classroomMember = classroomMemberJpaRepository.findByClassroomIdAndStudentId(classroomId, studentId)
             ?: throw NoSuchElementException("해당 학급에 가입되어 있지 않은 학생입니다. 학급ID: $classroomId, 학생ID: $studentId")
 
         val requestor = memberJpaRepository.findByIdOrNull(requestorId)

@@ -77,7 +77,7 @@ class ClassroomController(
 
     @Operation(summary = "학급 폐쇄(삭제)", description = "학급을 삭제합니다. 해당 학급을 개설한 선생님 또는 관리자만 가능합니다.")
     @ApiResponses(value = [
-        ApiResponse(responseCode = "24", description = "학급 삭제 성공"),
+        ApiResponse(responseCode = "204", description = "학급 삭제 성공"),
         ApiResponse(responseCode = "400", description = "권한이 없거나 잘못된 요청"),
         ApiResponse(responseCode = "404", description = "학급 또는 회원 정보를 찾을 수 없음")
     ])
