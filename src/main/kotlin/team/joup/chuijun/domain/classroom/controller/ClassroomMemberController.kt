@@ -65,13 +65,15 @@ class ClassroomMemberController(
         return ResponseEntity.noContent().build()
     }
 
-    @Operation(summary = "로그인한 학생의 학급 목록 조회", description = "현재 로그인한 학생이 가입되어 있는 모든 학급 목록을 조회합니다. 프론트엔드 실데이터 연동 전용 API입니다.")
+    @Operation(summary = "로그인한 학생의 본인 학급 목록 조회", description = "현재 로그인한 학생이 가입되어 있는 모든 학급 목록을 조회합니다. RESTful 설계 가이드 및 IDOR 보안 취약점을 예방 조치했습니다.")
     @ApiResponses(value = [
-        ApiResponse(responseCode = "200", description = "학생 소속 학급 목록 조회 성공")
+        ApiResponse(responseCode = "200", description = "학생 소속 학급 목록 조회 성공"),
+        ApiResponse(responseCode = "400", description = "학생 역할이 아닌 회원이 요청함"),
+        ApiResponse(responseCode = "404", description = "존재하지 않는 회원 ID")
     ])
-    @GetMapping("/classrooms/student")
+    @GetMapping("/classrooms/me")
     fun getMyClassrooms(
-        @Parameter(description = "로그인한 학생 회원 ID", example = "2") @RequestParam studentId: Long
+        @Parameter(description = "로그인한 학생 회원 ID (임시 파라미터)", example = "2") @RequestParam studentId: Long
     ): ResponseEntity<List<ClassroomResponse>> {
         val response = classroomMemberService.getClassroomsByStudent(studentId)
         return ResponseEntity.ok(response)
