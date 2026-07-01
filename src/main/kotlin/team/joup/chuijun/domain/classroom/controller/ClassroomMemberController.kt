@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import team.joup.chuijun.domain.classroom.dto.request.JoinClassroomRequest
 import team.joup.chuijun.domain.classroom.dto.response.ClassroomInviteCodeResponse
+import team.joup.chuijun.domain.classroom.dto.response.ClassroomResponse
 import team.joup.chuijun.domain.classroom.service.ClassroomMemberService
 
 @Tag(name = "학급 멤버 및 초대 (Classroom Member)", description = "학생의 학급 가입, 초대 코드 조회 및 학생 관리 API")
@@ -62,5 +63,17 @@ class ClassroomMemberController(
     ): ResponseEntity<Unit> {
         classroomMemberService.kickStudent(requestorId, classroomId, studentId)
         return ResponseEntity.noContent().build()
+    }
+
+    @Operation(summary = "로그인한 학생의 학급 목록 조회", description = "현재 로그인한 학생이 가입되어 있는 모든 학급 목록을 조회합니다. 프론트엔드 실데이터 연동 전용 API입니다.")
+    @ApiResponses(value = [
+        ApiResponse(responseCode = "200", description = "학생 소속 학급 목록 조회 성공")
+    ])
+    @GetMapping("/classrooms/student")
+    fun getMyClassrooms(
+        @Parameter(description = "로그인한 학생 회원 ID", example = "2") @RequestParam studentId: Long
+    ): ResponseEntity<List<ClassroomResponse>> {
+        val response = classroomMemberService.getClassroomsByStudent(studentId)
+        return ResponseEntity.ok(response)
     }
 }

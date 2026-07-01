@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import team.joup.chuijun.domain.classroom.dto.request.JoinClassroomRequest
 import team.joup.chuijun.domain.classroom.dto.response.ClassroomInviteCodeResponse
+import team.joup.chuijun.domain.classroom.dto.response.ClassroomResponse
 import team.joup.chuijun.domain.classroom.entity.ClassroomMemberJpaEntity
 import team.joup.chuijun.domain.classroom.repository.ClassroomJpaRepository
 import team.joup.chuijun.domain.classroom.repository.ClassroomMemberJpaRepository
@@ -76,5 +77,19 @@ class ClassroomMemberService(
         }
 
         classroomMemberJpaRepository.delete(classroomMember)
+    }
+
+    fun getClassroomsByStudent(studentId: Long): List<ClassroomResponse> {
+        val memberShips = classroomMemberJpaRepository.findByStudentIdWithClassroom(studentId)
+        return memberShips.map { memberShip ->
+            val classroom = memberShip.classroom
+            ClassroomResponse(
+                id = classroom.id!!,
+                name = classroom.name,
+                grade = classroom.grade,
+                classNum = classroom.classNum,
+                teacherName = classroom.teacher.name
+            )
+        }
     }
 }
