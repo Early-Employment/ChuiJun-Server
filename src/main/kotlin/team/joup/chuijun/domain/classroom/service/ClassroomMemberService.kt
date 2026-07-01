@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import team.joup.chuijun.domain.classroom.dto.request.JoinClassroomRequest
 import team.joup.chuijun.domain.classroom.dto.response.ClassroomInviteCodeResponse
+import team.joup.chuijun.domain.classroom.dto.response.ClassroomResponse
 import team.joup.chuijun.domain.classroom.entity.ClassroomMemberJpaEntity
 import team.joup.chuijun.domain.classroom.repository.ClassroomJpaRepository
 import team.joup.chuijun.domain.classroom.repository.ClassroomMemberJpaRepository
@@ -76,5 +77,26 @@ class ClassroomMemberService(
         }
 
         classroomMemberJpaRepository.delete(classroomMember)
+    }
+
+    fun getClassroomsByStudent(studentId: Long): List<ClassroomResponse> {
+        val student = memberJpaRepository.findByIdOrNull(studentId)
+            ?: throw NoSuchElementException("존재하지 않는 회원입니다. ID: $studentId")
+
+        if (student.role != MemberRole.STUDENT) {
+            throw IllegalArgumentException("학생 역할을 가진 회원만 학급 목록을 조회할 수 있습니다.")
+        }
+
+        val memberShips = classroomMemberJpaRepository.findByStudentIdWithClassroom(studentId)
+        return memberShips.map { memberShip ->
+            val classroom = memberShip.classroom
+            ClassroomResponse(
+                id = classroom.id!!,
+                name = classroom.name,
+                grade = classroom.grade,
+                classNum = classroom.classNum,
+                teacherName = classroom.teacher.name
+            )
+        }
     }
 }
