@@ -16,6 +16,7 @@ import team.joup.chuijun.domain.member.repository.MemberJpaRepository
 import team.joup.chuijun.domain.member.repository.DailyStudyStatsJpaRepository
 import team.joup.chuijun.domain.submission.repository.SubmissionJpaRepository
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.NoSuchElementException
 
@@ -53,6 +54,15 @@ class MemberService(
         val member = memberJpaRepository.findByEmail(email)
             ?: throw NoSuchElementException("존재하지 않는 회원입니다. Email: $email")
         return convertToProfileResponse(member)
+    }
+
+    @Transactional
+    fun updateProfileImage(memberId: Long, profileImageUrl: String?) {
+        val member = memberJpaRepository.findByIdOrNull(memberId)
+            ?: throw NoSuchElementException("존재하지 않는 회원입니다. ID: $memberId")
+
+        member.profileImageUrl = profileImageUrl
+        member.updatedAt = LocalDateTime.now()
     }
 
     private fun convertToProfileResponse(member: MemberJpaEntity): GetMemberProfileResponse {
