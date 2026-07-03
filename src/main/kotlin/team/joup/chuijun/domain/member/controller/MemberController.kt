@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -15,6 +16,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.web.bind.annotation.*
+import team.joup.chuijun.domain.member.dto.request.UpdateProfileImageRequest
 import team.joup.chuijun.domain.member.dto.response.GetMemberRankingResponse
 import team.joup.chuijun.domain.member.dto.response.GetMemberProfileResponse
 import team.joup.chuijun.domain.member.service.MemberService
@@ -66,11 +68,30 @@ class MemberController(
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
         }
 
-        // JwtAuthenticationFilter 가 principal 의 username 을 memberId 로 채운다.
-        // 숫자가 아닌 username(테스트 더미 등)이면 NumberFormatException 대신 401 로 방어한다.
         val memberId = userDetails.username.toLongOrNull()
             ?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
         val response = memberService.getMemberProfile(memberId)
         return ResponseEntity.ok(response)
+    }
+
+    @Operation(summary = "내 프로필 이미지 수정")
+    @ApiResponses(value = [
+        ApiResponse(responseCode = "200", description = "수정 성공"),
+        ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+        ApiResponse(responseCode = "404", description = "해당 회원을 찾을 수 없음")
+    ])
+    @PutMapping("/me/profile-image")
+    fun updateProfileImage(
+        @AuthenticationPrincipal userDetails: UserDetails?,
+        @Valid @RequestBody request: UpdateProfileImageRequest
+    ): ResponseEntity<Void> {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
+        }
+        val memberId = userDetails.username.toLongOrNull()
+            ?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
+
+        memberService.updateProfileImage(memberId, request.profileImageUrl)
+        return ResponseEntity.ok().build()
     }
 }
