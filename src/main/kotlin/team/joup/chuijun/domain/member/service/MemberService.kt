@@ -61,7 +61,7 @@ class MemberService(
         val member = memberJpaRepository.findByIdOrNull(memberId)
             ?: throw NoSuchElementException("존재하지 않는 회원입니다. ID: $memberId")
 
-        member.profileImageUrl = profileImageUrl
+        member.profileImageUrl = profileImageUrl?.takeIf { it.isNotBlank() }
         member.updatedAt = LocalDateTime.now()
     }
 

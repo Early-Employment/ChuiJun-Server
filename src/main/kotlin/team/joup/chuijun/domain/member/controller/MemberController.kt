@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -82,7 +83,7 @@ class MemberController(
     @PutMapping("/me/profile-image")
     fun updateProfileImage(
         @AuthenticationPrincipal userDetails: UserDetails?,
-        @RequestBody request: UpdateProfileImageRequest
+        @Valid @RequestBody request: UpdateProfileImageRequest
     ): ResponseEntity<Void> {
         if (userDetails == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
