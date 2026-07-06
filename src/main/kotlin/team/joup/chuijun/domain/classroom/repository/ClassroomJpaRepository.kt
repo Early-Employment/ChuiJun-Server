@@ -8,5 +8,5 @@ import team.joup.chuijun.domain.classroom.entity.ClassroomJpaEntity
 interface ClassroomJpaRepository : JpaRepository<ClassroomJpaEntity, Long> {
     fun findByInviteCode(inviteCode: String): ClassroomJpaEntity?
     fun findByTeacherId(teacherId: Long): List<ClassroomJpaEntity>
-    fun findByGradeAndClassNum(grade: Int, classNum: Int): ClassroomJpaEntity?
+    fun findByGradeAndClassNum(grade: Int, classNum: Int): List<ClassroomJpaEntity>
 }

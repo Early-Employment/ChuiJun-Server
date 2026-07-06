@@ -14,7 +14,6 @@ import team.joup.chuijun.domain.classroom.repository.ClassroomMemberJpaRepositor
 import team.joup.chuijun.domain.member.entity.MemberRole
 import team.joup.chuijun.domain.member.repository.MemberJpaRepository
 import team.joup.chuijun.domain.problem.repository.ProblemJpaRepository
-import java.time.LocalDateTime
 import java.util.NoSuchElementException
 
 @Service
@@ -35,22 +34,20 @@ class ClassroomAssignmentService(
         val grade = student.grade ?: return
         val classNum = student.classNum ?: return
 
-        val matchedClassroom = classroomJpaRepository.findByGradeAndClassNum(grade, classNum) ?: return
+        val matchedClassrooms = classroomJpaRepository.findByGradeAndClassNum(grade, classNum)
+        val matchedClassroom = matchedClassrooms.firstOrNull() ?: return
 
         val classroomId = checkNotNull(matchedClassroom.id)
         val studentId = checkNotNull(student.id)
 
-        val isAlreadyAssigned = classroomMemberJpaRepository.existsByClassroomIdAndStudentId(classroomId, studentId)
+        classroomMemberJpaRepository.deleteByStudentId(studentId)
 
-        if (!isAlreadyAssigned) {
-            classroomMemberJpaRepository.save(
-                ClassroomMemberJpaEntity(
-                    classroom = matchedClassroom,
-                    student = student
-                )
+        classroomMemberJpaRepository.save(
+            ClassroomMemberJpaEntity(
+                classroom = matchedClassroom,
+                student = student
             )
-            student.updatedAt = LocalDateTime.now()
-        }
+        )
     }
 
     @Transactional

@@ -11,6 +11,7 @@ interface ClassroomMemberJpaRepository : JpaRepository<ClassroomMemberJpaEntity,
     fun existsByClassroomIdAndStudentId(classroomId: Long, studentId: Long): Boolean
     fun findByClassroomIdAndStudentId(classroomId: Long, studentId: Long): ClassroomMemberJpaEntity?
     fun findByClassroomId(classroomId: Long): List<ClassroomMemberJpaEntity>
+    fun deleteByStudentId(studentId: Long)
 
     @Query("SELECT cm FROM ClassroomMemberJpaEntity cm JOIN FETCH cm.classroom c JOIN FETCH c.teacher WHERE cm.student.id = :studentId")
     fun findByStudentIdWithClassroom(@Param("studentId") studentId: Long): List<ClassroomMemberJpaEntity>
