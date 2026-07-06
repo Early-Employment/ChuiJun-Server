@@ -7,8 +7,10 @@ import team.joup.chuijun.domain.classroom.dto.request.ClassroomAssignmentCreateR
 import team.joup.chuijun.domain.classroom.dto.request.ClassroomAssignmentUpdateRequest
 import team.joup.chuijun.domain.classroom.dto.response.ClassroomAssignmentResponse
 import team.joup.chuijun.domain.classroom.entity.ClassroomAssignmentJpaEntity
+import team.joup.chuijun.domain.classroom.entity.ClassroomMemberJpaEntity
 import team.joup.chuijun.domain.classroom.repository.ClassroomAssignmentJpaRepository
 import team.joup.chuijun.domain.classroom.repository.ClassroomJpaRepository
+import team.joup.chuijun.domain.classroom.repository.ClassroomMemberJpaRepository
 import team.joup.chuijun.domain.member.entity.MemberRole
 import team.joup.chuijun.domain.member.repository.MemberJpaRepository
 import team.joup.chuijun.domain.problem.repository.ProblemJpaRepository
@@ -20,8 +22,33 @@ class ClassroomAssignmentService(
     private val assignmentJpaRepository: ClassroomAssignmentJpaRepository,
     private val classroomJpaRepository: ClassroomJpaRepository,
     private val problemJpaRepository: ProblemJpaRepository,
-    private val memberJpaRepository: MemberJpaRepository
+    private val memberJpaRepository: MemberJpaRepository,
+    private val classroomMemberJpaRepository: ClassroomMemberJpaRepository
 ) {
+
+    @Transactional
+    fun assignClassroomAutomatically(memberId: Long) {
+        val student = memberJpaRepository.findByIdOrNull(memberId)
+            ?: throw NoSuchElementException("존재하지 않는 회원입니다. ID: $memberId")
+
+        val grade = student.grade ?: return
+        val classNum = student.classNum ?: return
+
+        val matchedClassrooms = classroomJpaRepository.findByGradeAndClassNum(grade, classNum)
+        val matchedClassroom = matchedClassrooms.firstOrNull() ?: return
+
+        val classroomId = checkNotNull(matchedClassroom.id)
+        val studentId = checkNotNull(student.id)
+
+        classroomMemberJpaRepository.deleteByStudentId(studentId)
+
+        classroomMemberJpaRepository.save(
+            ClassroomMemberJpaEntity(
+                classroom = matchedClassroom,
+                student = student
+            )
+        )
+    }
 
     @Transactional
     fun assignProblem(requestorId: Long, classroomId: Long, request: ClassroomAssignmentCreateRequest): Long {
