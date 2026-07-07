@@ -34,7 +34,7 @@ class ClassroomMemberController(
         return ResponseEntity.ok(response)
     }
 
-    @Operation(summary = "학생 학급 가입", description = "초대 코드를 이용해 학생이 학급에 가입합니다. 학생 역할의 회원만 가입이 가능합니다.")
+    @Operation(summary = "학생 학급 가입 (수동)", description = "초대 코드를 이용해 학생이 학급에 수동으로 가입합니다. 학생 역할의 회원만 가입이 가능합니다.")
     @ApiResponses(value = [
         ApiResponse(responseCode = "201", description = "학급 가입 성공"),
         ApiResponse(responseCode = "400", description = "이미 가입했거나 학생 역할이 아님"),
@@ -47,6 +47,19 @@ class ClassroomMemberController(
     ): ResponseEntity<Long> {
         val classroomMemberId = classroomMemberService.joinClassroom(studentId, request)
         return ResponseEntity.status(HttpStatus.CREATED).body(classroomMemberId)
+    }
+
+    @Operation(summary = "학생 학급 자동 가입 및 배정", description = "학생의 프로필 정보(학년/반)를 기반으로 매칭되는 학급에 자동으로 소속시킵니다. 기존 소속이 있다면 자동으로 이전됩니다.")
+    @ApiResponses(value = [
+        ApiResponse(responseCode = "200", description = "학급 자동 배정 및 이사 성공"),
+        ApiResponse(responseCode = "404", description = "존재하지 않는 회원 정보")
+    ])
+    @PostMapping("/classrooms/auto-assign")
+    fun assignClassroomAutomatically(
+        @Parameter(description = "자동 배정을 진행할 학생 회원 ID", example = "2") @RequestParam memberId: Long
+    ): ResponseEntity<Unit> {
+        classroomMemberService.assignClassroomAutomatically(memberId)
+        return ResponseEntity.ok().build()
     }
 
     @Operation(summary = "학생 추방", description = "특정 학생을 학급에서 탈퇴시킵니다. 해당 학급의 담당 선생님 또는 관리자만 가능합니다.")

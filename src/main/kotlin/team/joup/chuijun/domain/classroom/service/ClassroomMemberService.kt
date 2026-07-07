@@ -99,4 +99,28 @@ class ClassroomMemberService(
             )
         }
     }
+
+    @Transactional
+    fun assignClassroomAutomatically(memberId: Long) {
+        val student = memberJpaRepository.findByIdOrNull(memberId)
+            ?: throw NoSuchElementException("존재하지 않는 회원입니다. ID: $memberId")
+
+        val grade = student.grade ?: return
+        val classNum = student.classNum ?: return
+
+        val matchedClassrooms = classroomJpaRepository.findByGradeAndClassNum(grade, classNum)
+        val matchedClassroom = matchedClassrooms.firstOrNull() ?: return
+
+        val classroomId = checkNotNull(matchedClassroom.id)
+        val studentId = checkNotNull(student.id)
+
+        classroomMemberJpaRepository.deleteByStudentId(studentId)
+
+        classroomMemberJpaRepository.save(
+            ClassroomMemberJpaEntity(
+                classroom = matchedClassroom,
+                student = student
+            )
+        )
+    }
 }
