@@ -12,7 +12,6 @@ data class GetProblemDetailResponse(
     val outputMd: String?,
     val level: ProblemLevel,
     val algorithmType: AlgorithmType?,
-    val primaryTag: String?,
     val point: Int,
     val timeLimitMs: Int,
     val memoryLimitKb: Int,

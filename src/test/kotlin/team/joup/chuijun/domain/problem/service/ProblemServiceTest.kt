@@ -141,8 +141,6 @@ class ProblemServiceTest {
             outputMd = null,
             level = level,
             algorithmType = algorithmType,
-            primaryTag = algorithmType.name,
-            tagListJson = null,
             status = ProblemStatus.PUBLISHED
         )
     }

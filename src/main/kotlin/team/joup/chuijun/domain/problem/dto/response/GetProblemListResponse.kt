@@ -10,7 +10,6 @@ data class GetProblemListResponse(
     val title: String,
     val level: ProblemLevel,
     val algorithmType: AlgorithmType?,
-    val primaryTag: String?,
     val solveStatus: SolveStatus?,
     val point: Int,
     val acceptRate: Double
