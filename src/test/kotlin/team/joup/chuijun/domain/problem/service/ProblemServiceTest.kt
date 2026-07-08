@@ -87,6 +87,18 @@ class ProblemServiceTest {
         assertEquals(AlgorithmType.BINARY_SEARCH, AlgorithmType.fromQuery("이분탐색"))
     }
 
+
+    @Test
+    fun `algorithm tag names include raw uppercase and normalized aliases`() {
+        val bruteForceTags = AlgorithmType.BRUTE_FORCE.tagNames()
+        assertEquals(true, "BRUTE_FORCE" in bruteForceTags)
+        assertEquals(true, "BRUTEFORCE" in bruteForceTags)
+
+        val binarySearchTags = AlgorithmType.BINARY_SEARCH.tagNames()
+        assertEquals(true, "BINARY_SEARCH" in binarySearchTags)
+        assertEquals(true, "BINARYSEARCH" in binarySearchTags)
+    }
+
     @Test
     fun `marks each problem solve status for logged in member`() {
         val pageable = PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "id"))

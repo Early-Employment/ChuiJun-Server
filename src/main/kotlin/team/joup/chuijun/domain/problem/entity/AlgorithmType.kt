@@ -13,7 +13,7 @@ enum class AlgorithmType(
 
     fun tagNames(): Set<String> {
         return (listOf(name, label) + aliases)
-            .map { normalize(it) }
+            .flatMap { raw -> listOf(raw.uppercase(), normalize(raw)) }
             .toSet()
     }
 
