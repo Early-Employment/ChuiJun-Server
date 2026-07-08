@@ -39,14 +39,12 @@ class ProblemService(
         pageable: Pageable
     ): Page<GetProblemListResponse> {
         val keywordPattern = keyword?.trim()?.takeIf { it.isNotBlank() }?.let { "%${it.lowercase()}%" }
-        val algorithmTagNames = algorithmType?.tagNames() ?: NO_ALGORITHM_TAG_FILTER
         val problems = when (solveStatus) {
-            null -> problemJpaRepository.findFiltered(keywordPattern, level, algorithmType, algorithmTagNames, pageable)
+            null -> problemJpaRepository.findFiltered(keywordPattern, level, algorithmType, pageable)
             SolveStatus.SOLVED -> problemJpaRepository.findSolvedFiltered(
                 keywordPattern,
                 level,
                 algorithmType,
-                algorithmTagNames,
                 requireNotNull(memberId),
                 ACCEPTED_STATUSES,
                 pageable
@@ -55,7 +53,6 @@ class ProblemService(
                 keywordPattern,
                 level,
                 algorithmType,
-                algorithmTagNames,
                 requireNotNull(memberId),
                 ACCEPTED_STATUSES,
                 pageable
@@ -64,7 +61,6 @@ class ProblemService(
                 keywordPattern,
                 level,
                 algorithmType,
-                algorithmTagNames,
                 requireNotNull(memberId),
                 pageable
             )
@@ -216,11 +212,10 @@ class ProblemService(
     }
 
     private fun resolveAlgorithmType(algorithmType: AlgorithmType?, primaryTag: String?): AlgorithmType? {
-        return algorithmType ?: runCatching { AlgorithmType.fromQuery(primaryTag) }.getOrNull()
+        return algorithmType ?: AlgorithmType.findByQuery(primaryTag)
     }
 
     companion object {
         private val ACCEPTED_STATUSES = listOf(JudgeStatus.PASSED, JudgeStatus.AC)
-        private val NO_ALGORITHM_TAG_FILTER = listOf("__NO_ALGORITHM_TAG_FILTER__")
     }
 }

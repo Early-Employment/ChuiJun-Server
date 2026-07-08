@@ -19,9 +19,14 @@ enum class AlgorithmType(
 
     companion object {
         fun fromQuery(value: String?): AlgorithmType? {
-            val normalized = value?.takeIf { it.isNotBlank() }?.let { normalize(it) } ?: return null
-            return entries.firstOrNull { normalized in it.tagNames() }
+            if (value.isNullOrBlank()) return null
+            return findByQuery(value)
                 ?: throw IllegalArgumentException("유효하지 않은 알고리즘 유형입니다: $value")
+        }
+
+        fun findByQuery(value: String?): AlgorithmType? {
+            val normalized = value?.trim()?.takeIf { it.isNotBlank() }?.let { normalize(it) } ?: return null
+            return entries.firstOrNull { normalized in it.tagNames() }
         }
 
         fun normalize(value: String): String {

@@ -45,7 +45,6 @@ class ProblemServiceTest {
                 "%서현%",
                 ProblemLevel.LEVEL_2,
                 AlgorithmType.DP,
-                AlgorithmType.DP.tagNames(),
                 1L,
                 pageable
             )
@@ -72,7 +71,6 @@ class ProblemServiceTest {
             "%서현%",
             ProblemLevel.LEVEL_2,
             AlgorithmType.DP,
-            AlgorithmType.DP.tagNames(),
             1L,
             pageable
         )
@@ -85,6 +83,9 @@ class ProblemServiceTest {
         assertEquals(SolveStatus.UNSOLVED, SolveStatus.fromQuery("안 푼 문제"))
         assertEquals(AlgorithmType.BRUTE_FORCE, AlgorithmType.fromQuery("브루트포스"))
         assertEquals(AlgorithmType.BINARY_SEARCH, AlgorithmType.fromQuery("이분탐색"))
+        assertEquals(null, ProblemLevel.fromQuery(" "))
+        assertEquals(null, SolveStatus.fromQuery(""))
+        assertEquals(null, AlgorithmType.fromQuery(" "))
     }
 
 
@@ -106,7 +107,7 @@ class ProblemServiceTest {
         val unsolvedProblem = problem(2L, "BFS 문제", ProblemLevel.LEVEL_3, AlgorithmType.BFS)
 
         `when`(
-            problemJpaRepository.findFiltered(null, null, null, listOf("__NO_ALGORITHM_TAG_FILTER__"), pageable)
+            problemJpaRepository.findFiltered(null, null, null, pageable)
         ).thenReturn(PageImpl(listOf(solvedProblem, unsolvedProblem), pageable, 2))
         `when`(
             submissionJpaRepository.findJudgeStatusesByMemberIdAndProblemIds(1L, listOf(1L, 2L))

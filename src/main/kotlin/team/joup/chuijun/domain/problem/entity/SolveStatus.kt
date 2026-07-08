@@ -8,6 +8,7 @@ enum class SolveStatus {
     companion object {
         fun fromQuery(value: String?): SolveStatus? {
             val normalized = value?.trim()
+                ?.takeIf { it.isNotBlank() }
                 ?.uppercase()
                 ?.replace(" ", "")
                 ?.replace("_", "")

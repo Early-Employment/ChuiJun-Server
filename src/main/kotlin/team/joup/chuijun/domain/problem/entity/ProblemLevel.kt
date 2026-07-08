@@ -18,6 +18,7 @@ enum class ProblemLevel(val levelValue: Int) {
 
         fun fromQuery(value: String?): ProblemLevel? {
             val normalized = value?.trim()
+                ?.takeIf { it.isNotBlank() }
                 ?.uppercase()
                 ?.replace(" ", "_")
                 ?.replace(".", "")
