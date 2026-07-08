@@ -15,6 +15,7 @@ import team.joup.chuijun.domain.auth.dto.DgUserInfoResponse
 import team.joup.chuijun.domain.member.entity.MemberJpaEntity
 import team.joup.chuijun.domain.member.entity.MemberRole
 import team.joup.chuijun.domain.member.repository.MemberJpaRepository
+import team.joup.chuijun.domain.classroom.service.ClassroomMemberService
 import team.joup.chuijun.global.jwt.JwtProvider
 import java.net.URI
 import java.security.MessageDigest
@@ -161,7 +162,8 @@ private fun String?.validConfigValue(name: String): String {
 
 @Component
 class DataGsmPersistenceService(
-    private val memberJpaRepository: MemberJpaRepository
+    private val memberJpaRepository: MemberJpaRepository,
+    private val classroomMemberService: ClassroomMemberService
 ) {
 
     @Transactional
@@ -169,6 +171,8 @@ class DataGsmPersistenceService(
         val student = userInfo.student
         val existingMember = student?.id?.let { memberJpaRepository.findByStudentId(it) }
             ?: memberJpaRepository.findByEmail(userInfo.email)
+
+        val isFirstLogin = (existingMember == null)
 
         val now = LocalDateTime.now()
         val name = student?.name ?: userInfo.email.substringBefore("@")
@@ -190,7 +194,14 @@ class DataGsmPersistenceService(
         member.major = student?.major
         member.updatedAt = now
 
-        return memberJpaRepository.save(member)
+        val savedMember = memberJpaRepository.save(member)
+
+        if (isFirstLogin && savedMember.role == MemberRole.STUDENT) {
+            val memberId = checkNotNull(savedMember.id) { "회원 데이터의 식별자가 누락되었습니다." }
+            classroomMemberService.assignClassroomAutomatically(memberId)
+        }
+
+        return savedMember
     }
 
     fun findMemberById(memberId: Long): MemberJpaEntity {
