@@ -1,5 +1,6 @@
 package team.joup.chuijun.domain.auth.service
 
+import org.slf4j.LoggerFactory
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
@@ -165,6 +166,7 @@ class DataGsmPersistenceService(
     private val memberJpaRepository: MemberJpaRepository,
     private val classroomMemberService: ClassroomMemberService
 ) {
+    private val log = LoggerFactory.getLogger(javaClass)
 
     @Transactional
     fun upsertMember(userInfo: DgUserInfoResponse): MemberJpaEntity {
@@ -196,9 +198,14 @@ class DataGsmPersistenceService(
 
         val savedMember = memberJpaRepository.save(member)
 
-        if (isFirstLogin && savedMember.role == MemberRole.STUDENT) {
+        if (isFirstLogin && savedMember.role == MemberRole.STUDENT && savedMember.grade != null && savedMember.classNum != null) {
             val memberId = checkNotNull(savedMember.id) { "회원 데이터의 식별자가 누락되었습니다." }
-            classroomMemberService.assignClassroomAutomatically(memberId)
+
+            try {
+                classroomMemberService.assignClassroomAutomatically(memberId)
+            } catch (e: Exception) {
+                log.error("신규 학생(ID: $memberId)의 학급 자동 배정에 실패했습니다. 사유: ${e.message}", e)
+            }
         }
 
         return savedMember
