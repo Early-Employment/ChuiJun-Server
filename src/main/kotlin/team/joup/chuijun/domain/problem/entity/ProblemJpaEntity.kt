@@ -36,6 +36,10 @@ class ProblemJpaEntity(
     @Column(nullable = false, length = 20)
     var level: ProblemLevel,
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "algorithm_type", length = 30)
+    var algorithmType: AlgorithmType? = null,
+
     @Column(name = "primary_tag", length = 50)
     var primaryTag: String? = null,
 

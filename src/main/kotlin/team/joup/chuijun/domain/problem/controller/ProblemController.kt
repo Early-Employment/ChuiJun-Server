@@ -14,11 +14,16 @@ import org.springframework.data.domain.Sort
 import org.springframework.data.web.PageableDefault
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.web.bind.annotation.*
 import team.joup.chuijun.domain.problem.dto.request.CreateProblemRequest
 import team.joup.chuijun.domain.problem.dto.request.UpdateProblemRequest
 import team.joup.chuijun.domain.problem.dto.response.GetProblemDetailResponse
 import team.joup.chuijun.domain.problem.dto.response.GetProblemListResponse
+import team.joup.chuijun.domain.problem.entity.AlgorithmType
+import team.joup.chuijun.domain.problem.entity.ProblemLevel
+import team.joup.chuijun.domain.problem.entity.SolveStatus
 import team.joup.chuijun.domain.problem.service.ProblemService
 import team.joup.chuijun.global.error.ErrorResponse
 
@@ -29,15 +34,35 @@ class ProblemController(
     private val problemService: ProblemService
 ) {
 
-    @Operation(summary = "문제 리스트 조회 및 검색 (페이징)", description = "시스템에 등록된 전체 문제 목록을 페이징 처리하여 조회합니다. 특정 키워드로 문제 제목을 검색할 수 있습니다.")
+    @Operation(summary = "문제 리스트 조회 및 검색 (페이징)", description = "문제 제목, 난이도, 풀이 상태, 알고리즘 유형으로 문제 목록을 필터링합니다.")
     @ApiResponses(value = [ApiResponse(responseCode = "200", description = "문제 목록 리스트 페이징 조회 성공")])
     @GetMapping
     fun getProblems(
         @Parameter(description = "검색할 문제 제목의 키워드 (선택 사항)", example = "준건이")
         @RequestParam(name = "keyword", required = false) keyword: String?,
+        @Parameter(description = "난이도 필터. LEVEL_2, Level 2, 2 모두 허용", example = "LEVEL_2")
+        @RequestParam(name = "level", required = false) level: String?,
+        @Parameter(description = "풀이 상태 필터. SOLVED/UNSOLVED/ATTEMPTED 또는 화면 표시값 허용", example = "UNSOLVED")
+        @RequestParam(name = "solveStatus", required = false) solveStatus: String?,
+        @Parameter(description = "알고리즘 유형 필터. DP, BFS, 브루트포스 등 허용", example = "DP")
+        @RequestParam(name = "algorithmType", required = false) algorithmType: String?,
+        @AuthenticationPrincipal userDetails: UserDetails?,
         @PageableDefault(size = 20, sort = ["id"], direction = Sort.Direction.DESC) pageable: Pageable
     ): ResponseEntity<Page<GetProblemListResponse>> {
-        val response = problemService.getProblemList(keyword, pageable)
+        val parsedSolveStatus = SolveStatus.fromQuery(solveStatus)
+        val memberId = userDetails?.username?.toLongOrNull()
+        if (parsedSolveStatus != null && memberId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
+        }
+
+        val response = problemService.getProblemList(
+            keyword = keyword,
+            level = ProblemLevel.fromQuery(level),
+            solveStatus = parsedSolveStatus,
+            algorithmType = AlgorithmType.fromQuery(algorithmType),
+            memberId = memberId,
+            pageable = pageable
+        )
         return ResponseEntity.ok(response)
     }
 

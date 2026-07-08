@@ -1,5 +1,6 @@
 package team.joup.chuijun.global.config
 
+import org.springframework.boot.security.autoconfigure.actuate.web.servlet.EndpointRequest
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -29,6 +30,7 @@ class SecurityConfig(
                     "/v3/api-docs/**",
                     "/auth/dg/**"
                 ).permitAll()
+                it.requestMatchers(EndpointRequest.to("health", "prometheus")).permitAll()
                 it.anyRequest().permitAll()
             }
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
