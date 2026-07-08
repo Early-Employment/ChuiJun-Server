@@ -38,12 +38,12 @@ class ProblemService(
         memberId: Long?,
         pageable: Pageable
     ): Page<GetProblemListResponse> {
-        val normalizedKeyword = keyword?.trim()?.takeIf { it.isNotBlank() }
+        val keywordPattern = keyword?.trim()?.takeIf { it.isNotBlank() }?.let { "%${it.lowercase()}%" }
         val algorithmTagNames = algorithmType?.tagNames() ?: NO_ALGORITHM_TAG_FILTER
         val problems = when (solveStatus) {
-            null -> problemJpaRepository.findFiltered(normalizedKeyword, level, algorithmType, algorithmTagNames, pageable)
+            null -> problemJpaRepository.findFiltered(keywordPattern, level, algorithmType, algorithmTagNames, pageable)
             SolveStatus.SOLVED -> problemJpaRepository.findSolvedFiltered(
-                normalizedKeyword,
+                keywordPattern,
                 level,
                 algorithmType,
                 algorithmTagNames,
@@ -52,7 +52,7 @@ class ProblemService(
                 pageable
             )
             SolveStatus.ATTEMPTED -> problemJpaRepository.findAttemptedFiltered(
-                normalizedKeyword,
+                keywordPattern,
                 level,
                 algorithmType,
                 algorithmTagNames,
@@ -61,7 +61,7 @@ class ProblemService(
                 pageable
             )
             SolveStatus.UNSOLVED -> problemJpaRepository.findUnsolvedFiltered(
-                normalizedKeyword,
+                keywordPattern,
                 level,
                 algorithmType,
                 algorithmTagNames,

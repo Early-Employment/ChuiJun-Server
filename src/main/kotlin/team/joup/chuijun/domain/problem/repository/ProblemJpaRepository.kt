@@ -15,19 +15,19 @@ interface ProblemJpaRepository : JpaRepository<ProblemJpaEntity, Long> {
     @Query(
         value = """
             SELECT p FROM ProblemJpaEntity p
-            WHERE (:keyword IS NULL OR LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%')))
+            WHERE (:keywordPattern IS NULL OR LOWER(p.title) LIKE :keywordPattern)
               AND (:level IS NULL OR p.level = :level)
-              AND (:algorithmType IS NULL OR p.algorithmType = :algorithmType OR UPPER(p.primaryTag) IN :algorithmTagNames)
+              AND (:algorithmType IS NULL OR p.algorithmType = :algorithmType OR REPLACE(REPLACE(REPLACE(UPPER(COALESCE(p.primaryTag, '')), ' ', ''), '_', ''), '-', '') IN :algorithmTagNames)
         """,
         countQuery = """
             SELECT COUNT(p) FROM ProblemJpaEntity p
-            WHERE (:keyword IS NULL OR LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%')))
+            WHERE (:keywordPattern IS NULL OR LOWER(p.title) LIKE :keywordPattern)
               AND (:level IS NULL OR p.level = :level)
-              AND (:algorithmType IS NULL OR p.algorithmType = :algorithmType OR UPPER(p.primaryTag) IN :algorithmTagNames)
+              AND (:algorithmType IS NULL OR p.algorithmType = :algorithmType OR REPLACE(REPLACE(REPLACE(UPPER(COALESCE(p.primaryTag, '')), ' ', ''), '_', ''), '-', '') IN :algorithmTagNames)
         """
     )
     fun findFiltered(
-        @Param("keyword") keyword: String?,
+        @Param("keywordPattern") keywordPattern: String?,
         @Param("level") level: ProblemLevel?,
         @Param("algorithmType") algorithmType: AlgorithmType?,
         @Param("algorithmTagNames") algorithmTagNames: Collection<String>,
@@ -37,9 +37,9 @@ interface ProblemJpaRepository : JpaRepository<ProblemJpaEntity, Long> {
     @Query(
         value = """
             SELECT p FROM ProblemJpaEntity p
-            WHERE (:keyword IS NULL OR LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%')))
+            WHERE (:keywordPattern IS NULL OR LOWER(p.title) LIKE :keywordPattern)
               AND (:level IS NULL OR p.level = :level)
-              AND (:algorithmType IS NULL OR p.algorithmType = :algorithmType OR UPPER(p.primaryTag) IN :algorithmTagNames)
+              AND (:algorithmType IS NULL OR p.algorithmType = :algorithmType OR REPLACE(REPLACE(REPLACE(UPPER(COALESCE(p.primaryTag, '')), ' ', ''), '_', ''), '-', '') IN :algorithmTagNames)
               AND EXISTS (
                   SELECT s.id FROM SubmissionJpaEntity s
                   WHERE s.problem.id = p.id
@@ -49,9 +49,9 @@ interface ProblemJpaRepository : JpaRepository<ProblemJpaEntity, Long> {
         """,
         countQuery = """
             SELECT COUNT(p) FROM ProblemJpaEntity p
-            WHERE (:keyword IS NULL OR LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%')))
+            WHERE (:keywordPattern IS NULL OR LOWER(p.title) LIKE :keywordPattern)
               AND (:level IS NULL OR p.level = :level)
-              AND (:algorithmType IS NULL OR p.algorithmType = :algorithmType OR UPPER(p.primaryTag) IN :algorithmTagNames)
+              AND (:algorithmType IS NULL OR p.algorithmType = :algorithmType OR REPLACE(REPLACE(REPLACE(UPPER(COALESCE(p.primaryTag, '')), ' ', ''), '_', ''), '-', '') IN :algorithmTagNames)
               AND EXISTS (
                   SELECT s.id FROM SubmissionJpaEntity s
                   WHERE s.problem.id = p.id
@@ -61,7 +61,7 @@ interface ProblemJpaRepository : JpaRepository<ProblemJpaEntity, Long> {
         """
     )
     fun findSolvedFiltered(
-        @Param("keyword") keyword: String?,
+        @Param("keywordPattern") keywordPattern: String?,
         @Param("level") level: ProblemLevel?,
         @Param("algorithmType") algorithmType: AlgorithmType?,
         @Param("algorithmTagNames") algorithmTagNames: Collection<String>,
@@ -73,9 +73,9 @@ interface ProblemJpaRepository : JpaRepository<ProblemJpaEntity, Long> {
     @Query(
         value = """
             SELECT p FROM ProblemJpaEntity p
-            WHERE (:keyword IS NULL OR LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%')))
+            WHERE (:keywordPattern IS NULL OR LOWER(p.title) LIKE :keywordPattern)
               AND (:level IS NULL OR p.level = :level)
-              AND (:algorithmType IS NULL OR p.algorithmType = :algorithmType OR UPPER(p.primaryTag) IN :algorithmTagNames)
+              AND (:algorithmType IS NULL OR p.algorithmType = :algorithmType OR REPLACE(REPLACE(REPLACE(UPPER(COALESCE(p.primaryTag, '')), ' ', ''), '_', ''), '-', '') IN :algorithmTagNames)
               AND EXISTS (
                   SELECT s.id FROM SubmissionJpaEntity s
                   WHERE s.problem.id = p.id
@@ -90,9 +90,9 @@ interface ProblemJpaRepository : JpaRepository<ProblemJpaEntity, Long> {
         """,
         countQuery = """
             SELECT COUNT(p) FROM ProblemJpaEntity p
-            WHERE (:keyword IS NULL OR LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%')))
+            WHERE (:keywordPattern IS NULL OR LOWER(p.title) LIKE :keywordPattern)
               AND (:level IS NULL OR p.level = :level)
-              AND (:algorithmType IS NULL OR p.algorithmType = :algorithmType OR UPPER(p.primaryTag) IN :algorithmTagNames)
+              AND (:algorithmType IS NULL OR p.algorithmType = :algorithmType OR REPLACE(REPLACE(REPLACE(UPPER(COALESCE(p.primaryTag, '')), ' ', ''), '_', ''), '-', '') IN :algorithmTagNames)
               AND EXISTS (
                   SELECT s.id FROM SubmissionJpaEntity s
                   WHERE s.problem.id = p.id
@@ -107,7 +107,7 @@ interface ProblemJpaRepository : JpaRepository<ProblemJpaEntity, Long> {
         """
     )
     fun findAttemptedFiltered(
-        @Param("keyword") keyword: String?,
+        @Param("keywordPattern") keywordPattern: String?,
         @Param("level") level: ProblemLevel?,
         @Param("algorithmType") algorithmType: AlgorithmType?,
         @Param("algorithmTagNames") algorithmTagNames: Collection<String>,
@@ -119,9 +119,9 @@ interface ProblemJpaRepository : JpaRepository<ProblemJpaEntity, Long> {
     @Query(
         value = """
             SELECT p FROM ProblemJpaEntity p
-            WHERE (:keyword IS NULL OR LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%')))
+            WHERE (:keywordPattern IS NULL OR LOWER(p.title) LIKE :keywordPattern)
               AND (:level IS NULL OR p.level = :level)
-              AND (:algorithmType IS NULL OR p.algorithmType = :algorithmType OR UPPER(p.primaryTag) IN :algorithmTagNames)
+              AND (:algorithmType IS NULL OR p.algorithmType = :algorithmType OR REPLACE(REPLACE(REPLACE(UPPER(COALESCE(p.primaryTag, '')), ' ', ''), '_', ''), '-', '') IN :algorithmTagNames)
               AND NOT EXISTS (
                   SELECT s.id FROM SubmissionJpaEntity s
                   WHERE s.problem.id = p.id
@@ -130,9 +130,9 @@ interface ProblemJpaRepository : JpaRepository<ProblemJpaEntity, Long> {
         """,
         countQuery = """
             SELECT COUNT(p) FROM ProblemJpaEntity p
-            WHERE (:keyword IS NULL OR LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%')))
+            WHERE (:keywordPattern IS NULL OR LOWER(p.title) LIKE :keywordPattern)
               AND (:level IS NULL OR p.level = :level)
-              AND (:algorithmType IS NULL OR p.algorithmType = :algorithmType OR UPPER(p.primaryTag) IN :algorithmTagNames)
+              AND (:algorithmType IS NULL OR p.algorithmType = :algorithmType OR REPLACE(REPLACE(REPLACE(UPPER(COALESCE(p.primaryTag, '')), ' ', ''), '_', ''), '-', '') IN :algorithmTagNames)
               AND NOT EXISTS (
                   SELECT s.id FROM SubmissionJpaEntity s
                   WHERE s.problem.id = p.id
@@ -141,7 +141,7 @@ interface ProblemJpaRepository : JpaRepository<ProblemJpaEntity, Long> {
         """
     )
     fun findUnsolvedFiltered(
-        @Param("keyword") keyword: String?,
+        @Param("keywordPattern") keywordPattern: String?,
         @Param("level") level: ProblemLevel?,
         @Param("algorithmType") algorithmType: AlgorithmType?,
         @Param("algorithmTagNames") algorithmTagNames: Collection<String>,

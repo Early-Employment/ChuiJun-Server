@@ -42,7 +42,7 @@ class ProblemServiceTest {
 
         `when`(
             problemJpaRepository.findUnsolvedFiltered(
-                "서현",
+                "%서현%",
                 ProblemLevel.LEVEL_2,
                 AlgorithmType.DP,
                 AlgorithmType.DP.tagNames(),
@@ -69,7 +69,7 @@ class ProblemServiceTest {
         assertEquals(AlgorithmType.DP, result.content[0].algorithmType)
         assertEquals(SolveStatus.UNSOLVED, result.content[0].solveStatus)
         verify(problemJpaRepository).findUnsolvedFiltered(
-            "서현",
+            "%서현%",
             ProblemLevel.LEVEL_2,
             AlgorithmType.DP,
             AlgorithmType.DP.tagNames(),
