@@ -25,8 +25,6 @@ data class CreateProblemRequest(
     val outputMd: String?,
     val level: ProblemLevel,
     val algorithmType: AlgorithmType? = null,
-    val primaryTag: String?,
-    val tagListJson: String?,
     val point: Int,
     val timeLimitMs: Int,
     val memoryLimitKb: Int,

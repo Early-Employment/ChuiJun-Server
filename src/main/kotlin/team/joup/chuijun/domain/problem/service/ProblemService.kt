@@ -77,7 +77,6 @@ class ProblemService(
                 title = problem.title,
                 level = problem.level,
                 algorithmType = problem.algorithmType,
-                primaryTag = problem.primaryTag,
                 solveStatus = memberId?.let { solveStatusesByProblemId[problemId] ?: SolveStatus.UNSOLVED },
                 point = problem.point,
                 acceptRate = problem.getAcceptRate()
@@ -111,7 +110,6 @@ class ProblemService(
             outputMd = problem.outputMd,
             level = problem.level,
             algorithmType = problem.algorithmType,
-            primaryTag = problem.primaryTag,
             point = problem.point,
             timeLimitMs = problem.timeLimitMs,
             memoryLimitKb = problem.memoryLimitKb,
@@ -129,9 +127,7 @@ class ProblemService(
             inputMd = request.inputMd,
             outputMd = request.outputMd,
             level = request.level,
-            algorithmType = resolveAlgorithmType(request.algorithmType, request.primaryTag),
-            primaryTag = request.primaryTag,
-            tagListJson = request.tagListJson,
+            algorithmType = request.algorithmType,
             timeLimitMs = request.timeLimitMs,
             memoryLimitKb = request.memoryLimitKb,
             status = request.status
@@ -164,9 +160,7 @@ class ProblemService(
         problem.inputMd = request.inputMd
         problem.outputMd = request.outputMd
         problem.level = request.level
-        problem.algorithmType = resolveAlgorithmType(request.algorithmType, request.primaryTag)
-        problem.primaryTag = request.primaryTag
-        problem.tagListJson = request.tagListJson
+        problem.algorithmType = request.algorithmType
         problem.timeLimitMs = request.timeLimitMs
         problem.memoryLimitKb = request.memoryLimitKb
         problem.status = request.status
@@ -209,10 +203,6 @@ class ProblemService(
                     SolveStatus.ATTEMPTED
                 }
             }
-    }
-
-    private fun resolveAlgorithmType(algorithmType: AlgorithmType?, primaryTag: String?): AlgorithmType? {
-        return algorithmType ?: AlgorithmType.findByQuery(primaryTag)
     }
 
     companion object {

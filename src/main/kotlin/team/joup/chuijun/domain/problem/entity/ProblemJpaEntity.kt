@@ -2,8 +2,6 @@ package team.joup.chuijun.domain.problem.entity
 
 import team.joup.chuijun.domain.member.entity.MemberJpaEntity
 import jakarta.persistence.*
-import org.hibernate.annotations.JdbcTypeCode
-import org.hibernate.type.SqlTypes
 import java.time.LocalDateTime
 
 @Entity
@@ -39,13 +37,6 @@ class ProblemJpaEntity(
     @Enumerated(EnumType.STRING)
     @Column(name = "algorithm_type", length = 30)
     var algorithmType: AlgorithmType? = null,
-
-    @Column(name = "primary_tag", length = 50)
-    var primaryTag: String? = null,
-
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "tag_list_json")
-    var tagListJson: String? = null,
 
     @Column(name = "time_limit_ms", nullable = false)
     var timeLimitMs: Int = 1000,
