@@ -18,6 +18,10 @@ enum class AlgorithmType(
     }
 
     companion object {
+        private val lookupMap: Map<String, AlgorithmType> = entries
+            .flatMap { entry -> entry.tagNames().map { tag -> tag to entry } }
+            .toMap()
+
         fun fromQuery(value: String?): AlgorithmType? {
             if (value.isNullOrBlank()) return null
             return findByQuery(value)
@@ -26,7 +30,7 @@ enum class AlgorithmType(
 
         fun findByQuery(value: String?): AlgorithmType? {
             val normalized = value?.trim()?.takeIf { it.isNotBlank() }?.let { normalize(it) } ?: return null
-            return entries.firstOrNull { normalized in it.tagNames() }
+            return lookupMap[normalized]
         }
 
         fun normalize(value: String): String {
