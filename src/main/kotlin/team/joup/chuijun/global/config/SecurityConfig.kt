@@ -27,7 +27,9 @@ class SecurityConfig(
                     "/swagger-ui/**",
                     "/swagger-ui.html",
                     "/v3/api-docs/**",
-                    "/auth/dg/**"
+                    "/auth/dg/**",
+                    "/actuator/health/**",
+                    "/actuator/prometheus"
                 ).permitAll()
                 it.anyRequest().permitAll()
             }

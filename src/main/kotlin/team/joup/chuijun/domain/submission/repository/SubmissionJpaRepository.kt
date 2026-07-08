@@ -20,4 +20,22 @@ interface SubmissionJpaRepository : JpaRepository<SubmissionJpaEntity, Long> {
         problemId: Long,
         judgeStatuses: Collection<JudgeStatus>
     ): Boolean
+
+    @Query(
+        """
+            SELECT s.problem.id AS problemId, s.judgeStatus AS judgeStatus
+            FROM SubmissionJpaEntity s
+            WHERE s.member.id = :memberId
+              AND s.problem.id IN :problemIds
+        """
+    )
+    fun findJudgeStatusesByMemberIdAndProblemIds(
+        @Param("memberId") memberId: Long,
+        @Param("problemIds") problemIds: Collection<Long>
+    ): List<ProblemSubmissionStatusProjection>
+}
+
+interface ProblemSubmissionStatusProjection {
+    val problemId: Long
+    val judgeStatus: JudgeStatus
 }

@@ -1,5 +1,6 @@
 package team.joup.chuijun.domain.problem.dto.response
 
+import team.joup.chuijun.domain.problem.entity.AlgorithmType
 import team.joup.chuijun.domain.problem.entity.ProblemLevel
 
 data class GetProblemDetailResponse(
@@ -10,6 +11,7 @@ data class GetProblemDetailResponse(
     val inputMd: String?,
     val outputMd: String?,
     val level: ProblemLevel,
+    val algorithmType: AlgorithmType?,
     val primaryTag: String?,
     val point: Int,
     val timeLimitMs: Int,
