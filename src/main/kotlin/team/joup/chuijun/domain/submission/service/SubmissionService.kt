@@ -36,22 +36,21 @@ class SubmissionService(
             studySeconds = request.studySeconds
         )
 
-        val isAlreadyPassed = submissionJpaRepository.existsByMemberIdAndProblemIdAndJudgeStatusIn(
-            member.id!!,
-            problem.id!!,
-            listOf(JudgeStatus.PASSED, JudgeStatus.AC)
-        )
+        val previousMaxScore = submissionJpaRepository.findMaxScoreByMemberIdAndProblemId(memberId, request.problemId) ?: 0
 
         submission.completeJudge(request.judgeStatus, request.score)
         val savedSubmission = submissionJpaRepository.save(submission)
 
         problem.increaseSubmitCount()
 
-        if (request.judgeStatus == JudgeStatus.PASSED || request.judgeStatus == JudgeStatus.AC) {
+        val isSuccess = request.judgeStatus == JudgeStatus.PASSED || request.judgeStatus == JudgeStatus.AC
+        if (isSuccess) {
             problem.increaseAcceptedCount()
-            if (!isAlreadyPassed) {
-                member.rating += problem.point
-            }
+        }
+
+        if (request.score > previousMaxScore) {
+            val scoreGap = request.score - previousMaxScore
+            member.rating += scoreGap
         }
 
         return SubmitProblemResponse(

@@ -33,6 +33,12 @@ interface SubmissionJpaRepository : JpaRepository<SubmissionJpaEntity, Long> {
         @Param("memberId") memberId: Long,
         @Param("problemIds") problemIds: Collection<Long>
     ): List<ProblemSubmissionStatusProjection>
+
+    @Query("SELECT MAX(s.score) FROM SubmissionJpaEntity s WHERE s.member.id = :memberId AND s.problem.id = :problemId")
+    fun findMaxScoreByMemberIdAndProblemId(
+        @Param("memberId") memberId: Long,
+        @Param("problemId") problemId: Long
+    ): Int?
 }
 
 interface ProblemSubmissionStatusProjection {
