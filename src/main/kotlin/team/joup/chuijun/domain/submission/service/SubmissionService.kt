@@ -36,7 +36,7 @@ class SubmissionService(
             studySeconds = request.studySeconds
         )
 
-        val previousMaxScore = submissionJpaRepository.findMaxScoreByMemberIdAndProblemId(member.id!!, problem.id!!) ?: 0
+        val previousMaxScore = submissionJpaRepository.findMaxScoreByMemberIdAndProblemId(memberId, request.problemId) ?: 0
 
         submission.completeJudge(request.judgeStatus, request.score)
         val savedSubmission = submissionJpaRepository.save(submission)
