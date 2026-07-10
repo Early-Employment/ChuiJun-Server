@@ -1,5 +1,6 @@
 package team.joup.chuijun.domain.member.service
 
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.PageRequest
@@ -31,7 +32,14 @@ import java.util.UUID
 class MemberService(
     private val memberJpaRepository: MemberJpaRepository,
     private val dailyStudyStatsJpaRepository: DailyStudyStatsJpaRepository,
-    private val submissionJpaRepository: SubmissionJpaRepository
+    private val submissionJpaRepository: SubmissionJpaRepository,
+    private val s3Presigner: S3Presigner,
+
+    @Value("\${aws.s3.bucket-name}")
+    private val bucketName: String,
+
+    @Value("\${aws.s3.region-domain}")
+    private val regionDomain: String
 ) {
 
     fun getRankings(pageable: Pageable): Page<GetMemberRankingResponse> {
@@ -76,16 +84,18 @@ class MemberService(
             throw NoSuchElementException("존재하지 않는 회원입니다. ID: $memberId")
         }
 
-        val fileExtension = fileName.substringAfterLast('.', "")
-        val uniqueFileName = "profiles/${memberId}_${UUID.randomUUID()}.${fileExtension}"
-        val bucketName = "chuijun-s3-bucket" // 실제 사용하시는 S3 버킷 명으로 대체해 주세요.
+        val fileExtension = fileName.substringAfterLast('.', "").lowercase()
+        if (fileExtension.isBlank()) {
+            throw IllegalArgumentException("파일 확장자가 필요합니다.")
+        }
 
-        val s3Presigner = S3Presigner.create()
+        val contentType = getProfileContentType(fileExtension)
+        val uniqueFileName = "profiles/${memberId}_${UUID.randomUUID()}.${fileExtension}"
 
         val objectRequest = PutObjectRequest.builder()
             .bucket(bucketName)
             .key(uniqueFileName)
-            .contentType(getProfileContentType(fileExtension))
+            .contentType(contentType)
             .build()
 
         val presignedRequest = PutObjectPresignRequest.builder()
@@ -94,7 +104,7 @@ class MemberService(
             .build()
 
         val presignedUrl = s3Presigner.presignPutObject(presignedRequest).url().toString()
-        val finalProfileImageUrl = "https://$bucketName.s3.ap-northeast-2.amazonaws.com/$uniqueFileName"
+        val finalProfileImageUrl = "https://$bucketName.$regionDomain/$uniqueFileName"
 
         return PresignedUrlResponse(
             presignedUrl = presignedUrl,
@@ -103,11 +113,12 @@ class MemberService(
     }
 
     private fun getProfileContentType(extension: String): String {
-        return when (extension.lowercase()) {
+        return when (extension) {
             "png" -> "image/png"
             "gif" -> "image/gif"
             "webp" -> "image/webp"
-            else -> "image/jpeg"
+            "jpg", "jpeg" -> "image/jpeg"
+            else -> throw IllegalArgumentException("지원하지 않는 이미지 확장자입니다: $extension")
         }
     }
 

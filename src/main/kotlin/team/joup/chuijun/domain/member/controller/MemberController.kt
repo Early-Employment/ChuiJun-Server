@@ -46,32 +46,17 @@ class MemberController(
     @Operation(summary = "내 대시보드 프로필 조회")
     @ApiResponses(value = [
         ApiResponse(responseCode = "200", description = "조회 성공"),
-        ApiResponse(
-            responseCode = "401",
-            description = "인증되지 않은 사용자",
-            content = [Content(schema = Schema(implementation = ErrorResponse::class))]
-        ),
-        ApiResponse(
-            responseCode = "404",
-            description = "해당 회원을 찾을 수 없음",
-            content = [Content(schema = Schema(implementation = ErrorResponse::class))]
-        ),
-        ApiResponse(
-            responseCode = "500",
-            description = "서버 내부 데이터 에러",
-            content = [Content(schema = Schema(implementation = ErrorResponse::class))]
-        )
+        ApiResponse(responseCode = "401", description = "인증되지 않은 사용자", content = [Content(schema = Schema(implementation = ErrorResponse::class))]),
+        ApiResponse(responseCode = "404", description = "해당 회원을 찾을 수 없음", content = [Content(schema = Schema(implementation = ErrorResponse::class))]),
+        ApiResponse(responseCode = "500", description = "서버 내부 데이터 에러", content = [Content(schema = Schema(implementation = ErrorResponse::class))])
     ])
     @GetMapping("/me")
     fun getMyProfile(
         @AuthenticationPrincipal userDetails: UserDetails?
     ): ResponseEntity<GetMemberProfileResponse> {
-        if (userDetails == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
-        }
-
-        val memberId = userDetails.username.toLongOrNull()
+        val memberId = getAuthenticatedMemberId(userDetails)
             ?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
+
         val response = memberService.getMemberProfile(memberId)
         return ResponseEntity.ok(response)
     }
@@ -87,10 +72,7 @@ class MemberController(
         @AuthenticationPrincipal userDetails: UserDetails?,
         @Valid @RequestBody request: UpdateProfileImageRequest
     ): ResponseEntity<Void> {
-        if (userDetails == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
-        }
-        val memberId = userDetails.username.toLongOrNull()
+        val memberId = getAuthenticatedMemberId(userDetails)
             ?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
 
         memberService.updateProfileImage(memberId, request.profileImageUrl)
@@ -108,13 +90,15 @@ class MemberController(
         @AuthenticationPrincipal userDetails: UserDetails?,
         @Valid @RequestBody request: GetPresignedUrlRequest
     ): ResponseEntity<PresignedUrlResponse> {
-        if (userDetails == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
-        }
-        val memberId = userDetails.username.toLongOrNull()
+        val memberId = getAuthenticatedMemberId(userDetails)
             ?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
 
         val response = memberService.createProfileImagePresignedUrl(memberId, request.fileName)
         return ResponseEntity.ok(response)
+    }
+
+    private fun getAuthenticatedMemberId(userDetails: UserDetails?): Long? {
+        if (userDetails == null) return null
+        return userDetails.username.toLongOrNull()
     }
 }

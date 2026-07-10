@@ -43,3 +43,8 @@ management:
     metrics:
         tags:
             application: chui-jun-server
+
+aws:
+    s3:
+        bucket-name: chuijun-s3-bucket
+        region-domain: s3.ap-northeast-2.amazonaws.com
