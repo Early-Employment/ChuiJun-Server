@@ -2,7 +2,6 @@ package team.joup.chuijun.domain.member.dto.response
 
 import io.swagger.v3.oas.annotations.media.Schema
 import team.joup.chuijun.domain.member.entity.MemberTier
-import team.joup.chuijun.domain.problem.entity.ProblemLevel
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -22,6 +21,15 @@ data class GetMemberProfileResponse(
 
     @Schema(description = "레이팅 점수", example = "4720")
     val rating: Int,
+
+    @Schema(description = "학년", example = "3")
+    val grade: Int?,
+
+    @Schema(description = "반", example = "2")
+    val classNum: Int?,
+
+    @Schema(description = "번호", example = "15")
+    val number: Int?,
 
     @Schema(description = "현재 연속 스트릭 일수", example = "5")
     val currentStreak: Int,

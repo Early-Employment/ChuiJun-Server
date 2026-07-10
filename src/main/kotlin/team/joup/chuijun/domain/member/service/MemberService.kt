@@ -99,8 +99,11 @@ class MemberService(
             profileImageUrl = member.profileImageUrl,
             tier = member.tier,
             rating = member.rating,
+            grade = member.grade,
+            classNum = member.classNum,
+            number = member.number,
             currentStreak = member.currentStreak,
-            totalSolvedCount = totalSolvedCount,
+            totalSolvedCount = totalSolvedCount.toInt(),
             grassRecord = grassRecord,
             recentActivities = recentActivities
         )
