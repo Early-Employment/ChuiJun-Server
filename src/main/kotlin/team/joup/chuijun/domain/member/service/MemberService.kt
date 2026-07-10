@@ -1,5 +1,6 @@
 package team.joup.chuijun.domain.member.service
 
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.PageRequest
@@ -7,25 +8,38 @@ import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import software.amazon.awssdk.services.s3.model.PutObjectRequest
+import software.amazon.awssdk.services.s3.presigner.S3Presigner
+import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest
 import team.joup.chuijun.domain.member.dto.response.GetMemberRankingResponse
 import team.joup.chuijun.domain.member.dto.response.GetMemberProfileResponse
 import team.joup.chuijun.domain.member.dto.response.GetDailyGrassDto
 import team.joup.chuijun.domain.member.dto.response.GetRecentActivityDto
+import team.joup.chuijun.domain.member.dto.response.PresignedUrlResponse
 import team.joup.chuijun.domain.member.entity.MemberJpaEntity
 import team.joup.chuijun.domain.member.repository.MemberJpaRepository
 import team.joup.chuijun.domain.member.repository.DailyStudyStatsJpaRepository
 import team.joup.chuijun.domain.submission.repository.SubmissionJpaRepository
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.NoSuchElementException
+import java.util.UUID
 
 @Service
 @Transactional(readOnly = true)
 class MemberService(
     private val memberJpaRepository: MemberJpaRepository,
     private val dailyStudyStatsJpaRepository: DailyStudyStatsJpaRepository,
-    private val submissionJpaRepository: SubmissionJpaRepository
+    private val submissionJpaRepository: SubmissionJpaRepository,
+    private val s3Presigner: S3Presigner,
+
+    @Value("\${aws.s3.bucket-name}")
+    private val bucketName: String,
+
+    @Value("\${aws.s3.region-domain}")
+    private val regionDomain: String
 ) {
 
     fun getRankings(pageable: Pageable): Page<GetMemberRankingResponse> {
@@ -63,6 +77,49 @@ class MemberService(
 
         member.profileImageUrl = profileImageUrl?.takeIf { it.isNotBlank() }
         member.updatedAt = LocalDateTime.now()
+    }
+
+    fun createProfileImagePresignedUrl(memberId: Long, fileName: String): PresignedUrlResponse {
+        if (!memberJpaRepository.existsById(memberId)) {
+            throw NoSuchElementException("존재하지 않는 회원입니다. ID: $memberId")
+        }
+
+        val fileExtension = fileName.substringAfterLast('.', "").lowercase()
+        if (fileExtension.isBlank()) {
+            throw IllegalArgumentException("파일 확장자가 필요합니다.")
+        }
+
+        val contentType = getProfileContentType(fileExtension)
+        val uniqueFileName = "profiles/${memberId}_${UUID.randomUUID()}.${fileExtension}"
+
+        val objectRequest = PutObjectRequest.builder()
+            .bucket(bucketName)
+            .key(uniqueFileName)
+            .contentType(contentType)
+            .build()
+
+        val presignedRequest = PutObjectPresignRequest.builder()
+            .signatureDuration(Duration.ofMinutes(10))
+            .putObjectRequest(objectRequest)
+            .build()
+
+        val presignedUrl = s3Presigner.presignPutObject(presignedRequest).url().toString()
+        val finalProfileImageUrl = "https://$bucketName.$regionDomain/$uniqueFileName"
+
+        return PresignedUrlResponse(
+            presignedUrl = presignedUrl,
+            profileImageUrl = finalProfileImageUrl
+        )
+    }
+
+    private fun getProfileContentType(extension: String): String {
+        return when (extension) {
+            "png" -> "image/png"
+            "gif" -> "image/gif"
+            "webp" -> "image/webp"
+            "jpg", "jpeg" -> "image/jpeg"
+            else -> throw IllegalArgumentException("지원하지 않는 이미지 확장자입니다: $extension")
+        }
     }
 
     private fun convertToProfileResponse(member: MemberJpaEntity): GetMemberProfileResponse {
