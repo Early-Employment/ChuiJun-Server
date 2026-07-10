@@ -12,6 +12,7 @@ import team.joup.chuijun.domain.classroom.repository.ClassroomJpaRepository
 import team.joup.chuijun.domain.member.entity.MemberRole
 import team.joup.chuijun.domain.member.repository.MemberJpaRepository
 import team.joup.chuijun.domain.problem.repository.ProblemJpaRepository
+import team.joup.chuijun.domain.submission.repository.SubmissionJpaRepository
 import java.util.NoSuchElementException
 
 @Service
@@ -20,7 +21,8 @@ class ClassroomAssignmentService(
     private val assignmentJpaRepository: ClassroomAssignmentJpaRepository,
     private val classroomJpaRepository: ClassroomJpaRepository,
     private val problemJpaRepository: ProblemJpaRepository,
-    private val memberJpaRepository: MemberJpaRepository
+    private val memberJpaRepository: MemberJpaRepository,
+    private val submissionJpaRepository: SubmissionJpaRepository
 ) {
 
     @Transactional
@@ -47,15 +49,18 @@ class ClassroomAssignmentService(
         return assignmentJpaRepository.save(assignment).id!!
     }
 
-    fun getAssignmentsByClassroom(classroomId: Long): List<ClassroomAssignmentResponse> {
+    fun getAssignmentsByClassroom(memberId: Long, classroomId: Long): List<ClassroomAssignmentResponse> {
         val assignments = assignmentJpaRepository.findByClassroomId(classroomId)
+        val submittedProblemIds = submissionJpaRepository.findSubmittedProblemIdsByMemberId(memberId)
+
         return assignments.map {
             ClassroomAssignmentResponse(
                 assignmentId = it.id!!,
                 problemId = it.problem.id!!,
                 problemTitle = it.problem.title,
                 dueDate = it.dueDate,
-                isRequired = it.isRequired
+                isRequired = it.isRequired,
+                isSubmitted = submittedProblemIds.contains(it.problem.id)
             )
         }
     }

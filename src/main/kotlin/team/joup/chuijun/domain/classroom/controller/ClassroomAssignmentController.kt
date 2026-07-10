@@ -7,6 +7,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.web.bind.annotation.*
 import team.joup.chuijun.domain.classroom.dto.request.ClassroomAssignmentCreateRequest
 import team.joup.chuijun.domain.classroom.dto.request.ClassroomAssignmentUpdateRequest
@@ -37,13 +39,18 @@ class ClassroomAssignmentController(
 
     @Operation(summary = "학급별 과제 목록 조회", description = "특정 학급에 출제된 모든 과제 목록을 조회합니다.")
     @ApiResponses(value = [
-        ApiResponse(responseCode = "200", description = "과제 목록 조회 성공")
+        ApiResponse(responseCode = "200", description = "과제 목록 조회 성공"),
+        ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
     ])
     @GetMapping("/classrooms/{classroomId}/assignments")
     fun getAssignmentsByClassroom(
+        @AuthenticationPrincipal userDetails: UserDetails?,
         @Parameter(description = "학급 식별자 ID", example = "1") @PathVariable classroomId: Long
     ): ResponseEntity<List<ClassroomAssignmentResponse>> {
-        val response = assignmentService.getAssignmentsByClassroom(classroomId)
+        val memberId = userDetails?.username?.toLongOrNull()
+            ?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
+
+        val response = assignmentService.getAssignmentsByClassroom(memberId, classroomId)
         return ResponseEntity.ok(response)
     }
 
