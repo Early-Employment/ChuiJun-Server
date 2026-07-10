@@ -40,7 +40,7 @@ interface SubmissionJpaRepository : JpaRepository<SubmissionJpaEntity, Long> {
         @Param("problemId") problemId: Long
     ): Int?
 
-    @Query("SELECT DISTINCT s.problem.id FROM SubmissionJpaEntity s WHERE s.member.id = :memberId")
+    @Query("SELECT DISTINCT s.problem.id FROM SubmissionJpaEntity s WHERE s.member.id = :memberId AND s.problem IS NOT NULL")
     fun findSubmittedProblemIdsByMemberId(@Param("memberId") memberId: Long): Set<Long>
 }
 
