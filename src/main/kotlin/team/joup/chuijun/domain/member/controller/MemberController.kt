@@ -16,9 +16,11 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.web.bind.annotation.*
+import team.joup.chuijun.domain.member.dto.request.GetPresignedUrlRequest
 import team.joup.chuijun.domain.member.dto.request.UpdateProfileImageRequest
 import team.joup.chuijun.domain.member.dto.response.GetMemberRankingResponse
 import team.joup.chuijun.domain.member.dto.response.GetMemberProfileResponse
+import team.joup.chuijun.domain.member.dto.response.PresignedUrlResponse
 import team.joup.chuijun.domain.member.service.MemberService
 import team.joup.chuijun.global.error.ErrorResponse
 
@@ -93,5 +95,26 @@ class MemberController(
 
         memberService.updateProfileImage(memberId, request.profileImageUrl)
         return ResponseEntity.ok().build()
+    }
+
+    @Operation(summary = "프로필 이미지 업로드용 Presigned URL 발급")
+    @ApiResponses(value = [
+        ApiResponse(responseCode = "200", description = "발급 성공"),
+        ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+        ApiResponse(responseCode = "404", description = "해당 회원을 찾을 수 없음")
+    ])
+    @PostMapping("/me/profile-image/presigned-url")
+    fun getProfileImagePresignedUrl(
+        @AuthenticationPrincipal userDetails: UserDetails?,
+        @Valid @RequestBody request: GetPresignedUrlRequest
+    ): ResponseEntity<PresignedUrlResponse> {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
+        }
+        val memberId = userDetails.username.toLongOrNull()
+            ?: return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
+
+        val response = memberService.createProfileImagePresignedUrl(memberId, request.fileName)
+        return ResponseEntity.ok(response)
     }
 }
