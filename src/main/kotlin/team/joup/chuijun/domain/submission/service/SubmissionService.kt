@@ -13,14 +13,13 @@ import team.joup.chuijun.domain.submission.repository.SubmissionJpaRepository
 import java.util.NoSuchElementException
 
 @Service
-@Transactional(readOnly = true)
+@Transactional
 class SubmissionService(
     private val submissionJpaRepository: SubmissionJpaRepository,
     private val memberJpaRepository: MemberJpaRepository,
     private val problemJpaRepository: ProblemJpaRepository
 ) {
 
-    @Transactional
     fun submitProblem(memberId: Long, request: SubmitProblemRequest): SubmitProblemResponse {
         val member = memberJpaRepository.findByIdWithPessimisticLock(memberId)
             ?: throw NoSuchElementException("존재하지 않는 회원입니다. ID: $memberId")
