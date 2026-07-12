@@ -40,8 +40,11 @@ interface SubmissionJpaRepository : JpaRepository<SubmissionJpaEntity, Long> {
         @Param("problemId") problemId: Long
     ): Int?
 
-    @Query("SELECT DISTINCT s.problem.id FROM SubmissionJpaEntity s WHERE s.member.id = :memberId AND s.problem IS NOT NULL")
-    fun findSubmittedProblemIdsByMemberId(@Param("memberId") memberId: Long): Set<Long>
+    @Query("SELECT s FROM SubmissionJpaEntity s WHERE s.member.id IN :memberIds AND s.problem.id IN :problemIds")
+    fun findByMemberIdInAndProblemIdIn(
+        @Param("memberIds") memberIds: Collection<Long>,
+        @Param("problemIds") problemIds: Collection<Long>
+    ): List<SubmissionJpaEntity>
 }
 
 interface ProblemSubmissionStatusProjection {

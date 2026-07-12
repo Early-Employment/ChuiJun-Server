@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*
 import team.joup.chuijun.domain.classroom.dto.request.ClassroomCreateRequest
 import team.joup.chuijun.domain.classroom.dto.request.ClassroomUpdateRequest
 import team.joup.chuijun.domain.classroom.dto.response.ClassroomResponse
+import team.joup.chuijun.domain.classroom.dto.response.ClassroomTeacherDashboardResponse
 import team.joup.chuijun.domain.classroom.service.ClassroomService
 
 @Tag(name = "학급 (Classroom)", description = "선생님의 학급 생성 및 정보 관리 API")
@@ -88,5 +89,20 @@ class ClassroomController(
     ): ResponseEntity<Unit> {
         classroomService.deleteClassroom(requestorId, classroomId)
         return ResponseEntity.noContent().build()
+    }
+
+    @Operation(summary = "선생님 학급 대시보드 조회", description = "선생님 페이지에 필요한 네 가지 핵심 통계 지표와 학생 및 과제 제출 현황을 한 번에 가져옵니다.")
+    @ApiResponses(value = [
+        ApiResponse(responseCode = "200", description = "대시보드 조회 성공"),
+        ApiResponse(responseCode = "400", description = "조회 권한 없음"),
+        ApiResponse(responseCode = "404", description = "학급 혹은 회원 없음")
+    ])
+    @GetMapping("/classrooms/{classroomId}/teacher-dashboard")
+    fun getTeacherDashboard(
+        @Parameter(description = "요청 선생님 회원 ID", example = "1") @RequestParam requestorId: Long,
+        @Parameter(description = "학급 식별자 ID", example = "1") @PathVariable classroomId: Long
+    ): ResponseEntity<ClassroomTeacherDashboardResponse> {
+        val response = classroomService.getTeacherDashboard(requestorId, classroomId)
+        return ResponseEntity.ok(response)
     }
 }
