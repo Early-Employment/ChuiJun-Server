@@ -17,7 +17,13 @@ class LocalUploadController(
         @PathVariable fileName: String,
         @RequestParam("file") file: MultipartFile
     ): ResponseEntity<Map<String, String>> {
-        val dest = File(uploadDir + fileName)
+        val baseDir = File(uploadDir).canonicalFile
+        val dest = File(baseDir, fileName).canonicalFile
+
+        if (!dest.toPath().startsWith(baseDir.toPath())) {
+            throw IllegalArgumentException("잘못된 파일 경로입니다.")
+        }
+
         file.transferTo(dest)
         return ResponseEntity.ok(mapOf("status" to "success"))
     }

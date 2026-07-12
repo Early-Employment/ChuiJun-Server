@@ -13,6 +13,6 @@ class WebConfig(
 
     override fun addResourceHandlers(registry: ResourceHandlerRegistry) {
         registry.addResourceHandler("/images/profiles/**")
-            .addResourceLocations("file:///$uploadDir")
+            .addResourceLocations("file:$uploadDir")
     }
 }
