@@ -1,5 +1,6 @@
 package team.joup.chuijun.domain.submission.service
 
+import jakarta.persistence.EntityManager
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -13,13 +14,15 @@ import team.joup.chuijun.domain.submission.repository.SubmissionJpaRepository
 import java.util.NoSuchElementException
 
 @Service
-@Transactional
+@Transactional(readOnly = true)
 class SubmissionService(
     private val submissionJpaRepository: SubmissionJpaRepository,
     private val memberJpaRepository: MemberJpaRepository,
-    private val problemJpaRepository: ProblemJpaRepository
+    private val problemJpaRepository: ProblemJpaRepository,
+    private val entityManager: EntityManager
 ) {
 
+    @Transactional
     fun submitProblem(memberId: Long, request: SubmitProblemRequest): SubmitProblemResponse {
         val member = memberJpaRepository.findByIdWithPessimisticLock(memberId)
             ?: throw NoSuchElementException("존재하지 않는 회원입니다. ID: $memberId")
@@ -51,6 +54,8 @@ class SubmissionService(
             val scoreGap = request.score - previousMaxScore
             member.rating += scoreGap
         }
+
+        entityManager.flush()
 
         return SubmitProblemResponse(
             submissionId = checkNotNull(savedSubmission.id),
