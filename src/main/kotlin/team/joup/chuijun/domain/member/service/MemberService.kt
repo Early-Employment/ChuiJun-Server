@@ -8,9 +8,6 @@ import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import software.amazon.awssdk.services.s3.model.PutObjectRequest
-import software.amazon.awssdk.services.s3.presigner.S3Presigner
-import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest
 import team.joup.chuijun.domain.member.dto.response.GetMemberRankingResponse
 import team.joup.chuijun.domain.member.dto.response.GetMemberProfileResponse
 import team.joup.chuijun.domain.member.dto.response.GetDailyGrassDto
@@ -20,7 +17,7 @@ import team.joup.chuijun.domain.member.entity.MemberJpaEntity
 import team.joup.chuijun.domain.member.repository.MemberJpaRepository
 import team.joup.chuijun.domain.member.repository.DailyStudyStatsJpaRepository
 import team.joup.chuijun.domain.submission.repository.SubmissionJpaRepository
-import java.time.Duration
+import java.io.File
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -33,13 +30,12 @@ class MemberService(
     private val memberJpaRepository: MemberJpaRepository,
     private val dailyStudyStatsJpaRepository: DailyStudyStatsJpaRepository,
     private val submissionJpaRepository: SubmissionJpaRepository,
-    private val s3Presigner: S3Presigner,
 
-    @Value("\${aws.s3.bucket-name}")
-    private val bucketName: String,
+    @Value("\${local.upload.dir:C:/uploads/profiles/}")
+    private val uploadDir: String,
 
-    @Value("\${aws.s3.region-domain}")
-    private val regionDomain: String
+    @Value("\${local.upload.server-url:http://localhost:8080}")
+    private val serverUrl: String
 ) {
 
     fun getRankings(pageable: Pageable): Page<GetMemberRankingResponse> {
@@ -89,37 +85,20 @@ class MemberService(
             throw IllegalArgumentException("파일 확장자가 필요합니다.")
         }
 
-        val contentType = getProfileContentType(fileExtension)
-        val uniqueFileName = "profiles/${memberId}_${UUID.randomUUID()}.${fileExtension}"
+        val directory = File(uploadDir)
+        if (!directory.exists()) {
+            directory.mkdirs()
+        }
 
-        val objectRequest = PutObjectRequest.builder()
-            .bucket(bucketName)
-            .key(uniqueFileName)
-            .contentType(contentType)
-            .build()
+        val uniqueFileName = "${memberId}_${UUID.randomUUID()}.$fileExtension"
 
-        val presignedRequest = PutObjectPresignRequest.builder()
-            .signatureDuration(Duration.ofMinutes(10))
-            .putObjectRequest(objectRequest)
-            .build()
-
-        val presignedUrl = s3Presigner.presignPutObject(presignedRequest).url().toString()
-        val finalProfileImageUrl = "https://$bucketName.$regionDomain/$uniqueFileName"
+        val mockUploadUrl = "$serverUrl/api/local-upload/$uniqueFileName"
+        val finalProfileImageUrl = "$serverUrl/images/profiles/$uniqueFileName"
 
         return PresignedUrlResponse(
-            presignedUrl = presignedUrl,
+            presignedUrl = mockUploadUrl,
             profileImageUrl = finalProfileImageUrl
         )
-    }
-
-    private fun getProfileContentType(extension: String): String {
-        return when (extension) {
-            "png" -> "image/png"
-            "gif" -> "image/gif"
-            "webp" -> "image/webp"
-            "jpg", "jpeg" -> "image/jpeg"
-            else -> throw IllegalArgumentException("지원하지 않는 이미지 확장자입니다: $extension")
-        }
     }
 
     private fun convertToProfileResponse(member: MemberJpaEntity): GetMemberProfileResponse {
