@@ -48,3 +48,8 @@ aws:
     s3:
         bucket-name: chuijun-s3-bucket
         region-domain: s3.ap-northeast-2.amazonaws.com
+
+local:
+    upload:
+        dir: "C:/uploads/profiles/"
+        server-url: "http://localhost:8084"
