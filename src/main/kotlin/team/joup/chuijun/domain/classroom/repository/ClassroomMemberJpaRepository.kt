@@ -15,4 +15,7 @@ interface ClassroomMemberJpaRepository : JpaRepository<ClassroomMemberJpaEntity,
 
     @Query("SELECT cm FROM ClassroomMemberJpaEntity cm JOIN FETCH cm.classroom c JOIN FETCH c.teacher WHERE cm.student.id = :studentId")
     fun findByStudentIdWithClassroom(@Param("studentId") studentId: Long): List<ClassroomMemberJpaEntity>
+
+    @Query("SELECT cm FROM ClassroomMemberJpaEntity cm JOIN FETCH cm.student WHERE cm.classroom.id = :classroomId")
+    fun findByClassroomIdWithStudent(@Param("classroomId") classroomId: Long): List<ClassroomMemberJpaEntity>
 }

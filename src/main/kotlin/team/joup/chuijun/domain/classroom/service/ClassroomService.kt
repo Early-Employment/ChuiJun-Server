@@ -102,7 +102,7 @@ class ClassroomService(
             throw IllegalArgumentException("본인이 담당하는 학급의 대시보드만 조회할 수 있습니다.")
         }
 
-        val classroomMembers = classroomMemberJpaRepository.findByClassroomId(classroomId)
+        val classroomMembers = classroomMemberJpaRepository.findByClassroomIdWithStudent(classroomId)
         val studentIds = classroomMembers.map { it.student.id!! }
 
         val students = classroomMembers.map {
@@ -126,11 +126,14 @@ class ClassroomService(
 
         val allSubmissions = submissionJpaRepository.findByMemberIdInAndProblemIdIn(studentIds, problemIds)
 
+        val submittedPairs = allSubmissions.mapNotNull { sub ->
+            val pId = sub.problem?.id
+            if (pId != null) sub.member.id!! to pId else null
+        }.toSet()
+
         val totalPossibleSubmissions = studentIds.size * problemIds.size
         val actualSubmittedCount = studentIds.sumOf { studentId ->
-            problemIds.count { problemId ->
-                allSubmissions.any { it.member.id == studentId && it.problem?.id == problemId }
-            }
+            problemIds.count { problemId -> submittedPairs.contains(studentId to problemId) }
         }
         val totalSubmissionRate = if (totalPossibleSubmissions > 0) {
             (actualSubmittedCount * 100) / totalPossibleSubmissions
@@ -139,9 +142,7 @@ class ClassroomService(
         val latestAssignment = assignments.maxByOrNull { it.dueDate }
         val recentMissingStudentsCount = if (latestAssignment != null) {
             val latestProblemId = latestAssignment.problem.id!!
-            studentIds.count { studentId ->
-                allSubmissions.none { it.member.id == studentId && it.problem?.id == latestProblemId }
-            }
+            studentIds.count { studentId -> !submittedPairs.contains(studentId to latestProblemId) }
         } else 0
 
         val acceptedSubmissions = allSubmissions.filter { it.judgeStatus == JudgeStatus.PASSED || it.judgeStatus == JudgeStatus.AC }
@@ -149,20 +150,20 @@ class ClassroomService(
             (acceptedSubmissions.size * 100) / allSubmissions.size
         } else 0
 
+        val submissionsGroupedByProblem = allSubmissions.groupBy { it.problem?.id }
+
         val lowCorrectRateProblemCount = problemIds.count { problemId ->
-            val problemSubmissions = allSubmissions.filter { it.problem?.id == problemId }
+            val problemSubmissions = submissionsGroupedByProblem[problemId] ?: emptyList()
             if (problemSubmissions.isNotEmpty()) {
-                val problemAccepted = problemSubmissions.filter { it.judgeStatus == JudgeStatus.PASSED || it.judgeStatus == JudgeStatus.AC }
-                val rate = (problemAccepted.size * 100) / problemSubmissions.size
+                val problemAcceptedCount = problemSubmissions.count { it.judgeStatus == JudgeStatus.PASSED || it.judgeStatus == JudgeStatus.AC }
+                val rate = (problemAcceptedCount * 100) / problemSubmissions.size
                 rate <= 50
             } else false
         }
 
         val assignmentResponses = assignments.map { assignment ->
             val pId = assignment.problem.id!!
-            val submittedCount = studentIds.count { studentId ->
-                allSubmissions.any { it.member.id == studentId && it.problem?.id == pId }
-            }
+            val submittedCount = studentIds.count { studentId -> submittedPairs.contains(studentId to pId) }
             TeacherAssignmentResponse(
                 assignmentId = assignment.id!!,
                 problemTitle = assignment.problem.title,
