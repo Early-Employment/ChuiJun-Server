@@ -1,5 +1,6 @@
 package team.joup.chuijun.domain.submission.service
 
+import jakarta.persistence.EntityManager
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -17,7 +18,8 @@ import java.util.NoSuchElementException
 class SubmissionService(
     private val submissionJpaRepository: SubmissionJpaRepository,
     private val memberJpaRepository: MemberJpaRepository,
-    private val problemJpaRepository: ProblemJpaRepository
+    private val problemJpaRepository: ProblemJpaRepository,
+    private val entityManager: EntityManager
 ) {
 
     @Transactional
@@ -52,6 +54,8 @@ class SubmissionService(
             val scoreGap = request.score - previousMaxScore
             member.rating += scoreGap
         }
+
+        entityManager.flush()
 
         return SubmitProblemResponse(
             submissionId = checkNotNull(savedSubmission.id),
