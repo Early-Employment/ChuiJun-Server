@@ -50,18 +50,18 @@ class SubmissionService(
             problem.increaseAcceptedCount()
         }
 
+        var finalRating = member.rating
         if (request.score > previousMaxScore) {
             val scoreGap = request.score - previousMaxScore
-            member.rating += scoreGap
+            memberJpaRepository.updateRating(memberId, scoreGap)
+            finalRating += scoreGap
         }
-
-        entityManager.flush()
 
         return SubmitProblemResponse(
             submissionId = checkNotNull(savedSubmission.id),
             judgeStatus = savedSubmission.judgeStatus,
             score = savedSubmission.score,
-            totalScoreAfter = member.rating
+            totalScoreAfter = finalRating
         )
     }
 }
