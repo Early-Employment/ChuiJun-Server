@@ -58,7 +58,7 @@ open class ClassroomService(
             throw IllegalArgumentException("선생님 혹은 관리자 권한이 필요합니다.")
         }
 
-        val classrooms = classroomJpaRepository.findAll()
+        val classrooms = classroomJpaRepository.findByTeacherId(teacherId)
 
         return classrooms.map { it.toResponse() }
     }
@@ -155,7 +155,7 @@ open class ClassroomService(
 
         val acceptedSubmissions = allSubmissions.filter { it.judgeStatus == JudgeStatus.PASSED || it.judgeStatus == JudgeStatus.AC }
         val averageCorrectRate = if (allSubmissions.isNotEmpty()) {
-            (acceptedSubmissions.size * 100) / allSubmissions.size
+            (actualSubmittedCount * 100) / allSubmissions.size
         } else 0
 
         val submissionsGroupedByProblem = allSubmissions.groupBy { it.problem?.id }
