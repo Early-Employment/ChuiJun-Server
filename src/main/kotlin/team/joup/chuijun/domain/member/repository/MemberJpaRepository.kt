@@ -17,8 +17,5 @@ interface MemberJpaRepository : JpaRepository<MemberJpaEntity, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select m from MemberJpaEntity m where m.id = :id")
     fun findByIdWithPessimisticLock(@Param("id") id: Long): MemberJpaEntity?
-
-    @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("UPDATE MemberJpaEntity m SET m.rating = m.rating + :scoreGap WHERE m.id = :memberId")
-    fun updateRating(@Param("memberId") memberId: Long, @Param("scoreGap") scoreGap: Int): Int
+    
 }

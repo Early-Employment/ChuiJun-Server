@@ -15,7 +15,7 @@ import java.util.NoSuchElementException
 
 @Service
 @Transactional(readOnly = true)
-class SubmissionService(
+open class SubmissionService(
     private val submissionJpaRepository: SubmissionJpaRepository,
     private val memberJpaRepository: MemberJpaRepository,
     private val problemJpaRepository: ProblemJpaRepository,
@@ -23,7 +23,7 @@ class SubmissionService(
 ) {
 
     @Transactional
-    fun submitProblem(memberId: Long, request: SubmitProblemRequest): SubmitProblemResponse {
+    open fun submitProblem(memberId: Long, request: SubmitProblemRequest): SubmitProblemResponse {
         val member = memberJpaRepository.findByIdWithPessimisticLock(memberId)
             ?: throw NoSuchElementException("존재하지 않는 회원입니다. ID: $memberId")
 
@@ -50,18 +50,16 @@ class SubmissionService(
             problem.increaseAcceptedCount()
         }
 
-        var finalRating = member.rating
         if (request.score > previousMaxScore) {
             val scoreGap = request.score - previousMaxScore
-            memberJpaRepository.updateRating(memberId, scoreGap)
-            finalRating += scoreGap
+            member.rating += scoreGap
         }
 
         return SubmitProblemResponse(
             submissionId = checkNotNull(savedSubmission.id),
             judgeStatus = savedSubmission.judgeStatus,
             score = savedSubmission.score,
-            totalScoreAfter = finalRating
+            totalScoreAfter = member.rating
         )
     }
 }
