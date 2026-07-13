@@ -179,16 +179,18 @@ class DataGsmPersistenceService(
         val now = LocalDateTime.now()
         val name = student?.name ?: userInfo.email.substringBefore("@")
 
+        val initialRole = existingMember?.role ?: resolveMemberRole(userInfo.role, student?.role)
+
         val member = existingMember ?: MemberJpaEntity(
             email = userInfo.email,
             name = name,
-            role = resolveMemberRole(userInfo.role, student?.role),
+            role = initialRole,
             studentId = student?.id
         )
 
         member.email = userInfo.email
         member.name = name
-        member.role = resolveMemberRole(userInfo.role, student?.role)
+
         member.studentId = student?.id ?: member.studentId
         member.grade = student?.grade
         member.classNum = student?.classNum
