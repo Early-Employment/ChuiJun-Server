@@ -18,7 +18,7 @@ import java.util.NoSuchElementException
 
 @Service
 @Transactional(readOnly = true)
-class ClassroomService(
+open class ClassroomService(
     private val classroomJpaRepository: ClassroomJpaRepository,
     private val memberJpaRepository: MemberJpaRepository,
     private val classroomMemberJpaRepository: ClassroomMemberJpaRepository,
@@ -27,7 +27,7 @@ class ClassroomService(
 ) {
 
     @Transactional
-    fun createClassroom(teacherId: Long, request: ClassroomCreateRequest): Long {
+    open fun createClassroom(teacherId: Long, request: ClassroomCreateRequest): Long {
         val teacher = memberJpaRepository.findByIdOrNull(teacherId)
             ?: throw NoSuchElementException("존재하지 않는 회원입니다. ID: $teacherId")
 
@@ -44,19 +44,29 @@ class ClassroomService(
         return classroomJpaRepository.save(classroom).id!!
     }
 
-    fun getClassroom(classroomId: Long): ClassroomResponse {
+    open fun getClassroom(classroomId: Long): ClassroomResponse {
         val classroom = classroomJpaRepository.findByIdOrNull(classroomId)
             ?: throw NoSuchElementException("존재하지 않는 학급입니다. ID: $classroomId")
         return classroom.toResponse()
     }
 
-    fun getClassroomsByTeacher(teacherId: Long): List<ClassroomResponse> {
-        val classrooms = classroomJpaRepository.findByTeacherId(teacherId)
+    open fun getClassroomsByTeacher(teacherId: Long): List<ClassroomResponse> {
+        val requestor = memberJpaRepository.findByIdOrNull(teacherId)
+            ?: throw NoSuchElementException("존재하지 않는 회원입니다. ID: $teacherId")
+
+        if (requestor.role != MemberRole.TEACHER && requestor.role != MemberRole.ADMIN) {
+            throw IllegalArgumentException("선생님 혹은 관리자 권한이 필요합니다.")
+        }
+
+        val classrooms = if (requestor.role == MemberRole.ADMIN || requestor.role == MemberRole.TEACHER) {
+            classroomJpaRepository.findAll()
+        }
+
         return classrooms.map { it.toResponse() }
     }
 
     @Transactional
-    fun updateClassroom(requestorId: Long, classroomId: Long, request: ClassroomUpdateRequest) {
+    open fun updateClassroom(requestorId: Long, classroomId: Long, request: ClassroomUpdateRequest) {
         val classroom = classroomJpaRepository.findByIdOrNull(classroomId)
             ?: throw NoSuchElementException("존재하지 않는 학급입니다. ID: $classroomId")
 
@@ -73,7 +83,7 @@ class ClassroomService(
     }
 
     @Transactional
-    fun deleteClassroom(requestorId: Long, classroomId: Long) {
+    open fun deleteClassroom(requestorId: Long, classroomId: Long) {
         val classroom = classroomJpaRepository.findByIdOrNull(classroomId)
             ?: throw NoSuchElementException("존재하지 않는 학급입니다. ID: $classroomId")
 
@@ -87,7 +97,7 @@ class ClassroomService(
         classroomJpaRepository.delete(classroom)
     }
 
-    fun getTeacherDashboard(requestorId: Long, classroomId: Long): ClassroomTeacherDashboardResponse {
+    open fun getTeacherDashboard(requestorId: Long, classroomId: Long): ClassroomTeacherDashboardResponse {
         val classroom = classroomJpaRepository.findByIdOrNull(classroomId)
             ?: throw NoSuchElementException("존재하지 않는 학급입니다. ID: $classroomId")
 
