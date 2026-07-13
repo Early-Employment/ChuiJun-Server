@@ -17,5 +17,5 @@ interface MemberJpaRepository : JpaRepository<MemberJpaEntity, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select m from MemberJpaEntity m where m.id = :id")
     fun findByIdWithPessimisticLock(@Param("id") id: Long): MemberJpaEntity?
-    
+
 }
