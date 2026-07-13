@@ -58,9 +58,7 @@ open class ClassroomService(
             throw IllegalArgumentException("선생님 혹은 관리자 권한이 필요합니다.")
         }
 
-        val classrooms = if (requestor.role == MemberRole.ADMIN || requestor.role == MemberRole.TEACHER) {
-            classroomJpaRepository.findAll()
-        }
+        val classrooms = classroomJpaRepository.findAll()
 
         return classrooms.map { it.toResponse() }
     }
