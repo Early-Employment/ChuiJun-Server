@@ -51,5 +51,5 @@ aws:
 
 local:
     upload:
-        dir: "C:/uploads/profiles/"
-        server-url: "http://localhost:8084"
+        dir: "/home/ubuntu/uploads/profiles/"
+        server-url: "https://chuijun.https.gsmsv.site"

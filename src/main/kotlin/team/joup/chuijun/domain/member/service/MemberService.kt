@@ -31,10 +31,10 @@ class MemberService(
     private val dailyStudyStatsJpaRepository: DailyStudyStatsJpaRepository,
     private val submissionJpaRepository: SubmissionJpaRepository,
 
-    @Value("\${local.upload.dir:C:/uploads/profiles/}")
+    @Value("\${local.upload.dir:/home/ubuntu/uploads/profiles/}")
     private val uploadDir: String,
 
-    @Value("\${local.upload.server-url:http://localhost:8080}")
+    @Value("\${local.upload.server-url:https://chuijun.https.gsmsv.site}")
     private val serverUrl: String
 ) {
 
@@ -93,7 +93,7 @@ class MemberService(
         val uniqueFileName = "${memberId}_${UUID.randomUUID()}.$fileExtension"
 
         val mockUploadUrl = "$serverUrl/api/local-upload/$uniqueFileName"
-        val finalProfileImageUrl = "$serverUrl/images/profiles/$uniqueFileName"
+        val finalProfileImageUrl = "/images/profiles/$uniqueFileName"
 
         return PresignedUrlResponse(
             presignedUrl = mockUploadUrl,
