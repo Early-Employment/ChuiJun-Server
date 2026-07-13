@@ -1,16 +1,13 @@
 package team.joup.chuijun.domain.member.controller
 
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.core.userdetails.User
-import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
-import team.joup.chuijun.domain.member.repository.MemberJpaRepository
+import team.joup.chuijun.domain.member.service.ProfileUpdateService
 import java.io.File
-import java.time.LocalDateTime
 import java.util.UUID
 
 @RestController
@@ -18,14 +15,15 @@ class LocalUploadController(
     @Value("\${local.upload.dir:C:/uploads/profiles/}")
     private val uploadDir: String,
 
-    @Value("\${local.upload.server-url:https://chuijun.https://gsmsv.site/}")
+    // 💡 피드백 적용: 중복되어 있던 https:// 제거 및 올바른 주소 형식으로 교정
+    @Value("\${local.upload.server-url:https://chuijun.gsmsv.site/}")
     private val serverUrl: String,
 
-    private val memberJpaRepository: MemberJpaRepository
+    private val profileUpdateService: ProfileUpdateService
 ) {
 
+    // 💡 피드백 적용: 컨트롤러 자체에 @Transactional을 제거하여 파일 I/O 도중 DB 커넥션을 잡지 않도록 수정
     @PutMapping("/api/local-upload")
-    @Transactional
     fun uploadFile(
         @AuthenticationPrincipal loginUser: User,
         @RequestParam("file") file: MultipartFile
@@ -34,7 +32,7 @@ class LocalUploadController(
             throw IllegalArgumentException("업로드할 파일이 비어 있습니다.")
         }
 
-        // 1. 저장할 디렉토리 준비
+        // 1. 디렉토리 준비
         val baseDir = File(uploadDir).canonicalFile
         if (!baseDir.exists()) {
             baseDir.mkdirs()
@@ -51,21 +49,16 @@ class LocalUploadController(
             throw IllegalArgumentException("잘못된 파일 경로입니다.")
         }
 
-        // 4. 서버 로컬 스토리지에 파일 물리 저장
+        // 4. 서버 로컬 스토리지에 파일 물리 저장 (트랜잭션 바깥에서 처리)
         file.transferTo(dest)
 
-        // 5. 프론트엔드가 사용할 수 있는 외부 웹 자원 주소(URL) 조립
+        // 5. 💡 피드백 적용: WebConfig의 리소스 규칙과 일치하도록 /images/profiles/ 포맷으로 조립
         val baseUrl = serverUrl.removeSuffix("/")
-        val profileImageUrl = "$baseUrl/uploads/profiles/$savedFileName"
+        val profileImageUrl = "$baseUrl/images/profiles/$savedFileName"
 
-        // 6. [서비스 클래스 없이 직접 처리] 로그인한 유저 엔티티 조회 및 DB 반영
+        // 6. 💡 피드백 적용: DB 반영 처리는 트랜잭션이 분리된 서비스 레이어로 위임
         val memberId = loginUser.username.toLong()
-        val member = memberJpaRepository.findByIdOrNull(memberId)
-            ?: throw NoSuchElementException("존재하지 않는 회원입니다. ID: $memberId")
-
-        // @Transactional 환경이므로 객체의 값만 바꾸면 알아서 DB에 UPDATE 쿼리가 날아갑니다.
-        member.profileImageUrl = profileImageUrl
-        member.updatedAt = LocalDateTime.now()
+        profileUpdateService.updateProfileImageUrl(memberId, profileImageUrl)
 
         // 7. 성공 결과 및 저장된 이미지 URL 반환
         return ResponseEntity.ok(
