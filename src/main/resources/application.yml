@@ -52,4 +52,4 @@ aws:
 local:
     upload:
         dir: "C:/uploads/profiles/"
-        server-url: "https://chuijun.https.gsmsv.site/"
+        server-url: "https://chuijun.https.gsmsv.site"
